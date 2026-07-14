@@ -13,7 +13,7 @@
         <button type="submit">Entrar</button>
     </form>
     <br>
-    <p>¿No tienes cuenta? <a href="/2prueba/registro.html">Regístrate aquí</a></p>
+    <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
 
  <script type="module">
         import { initializeApp } from "https://gstatic.com";
@@ -40,7 +40,7 @@
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     alert("¡Bienvenido!");
-                    window.location.href = "/2prueba/perfil.html"; 
+                    window.location.href = "perfil.html"; 
                 })
                 .catch((error) => {
                     alert("Error: Correo o contraseña incorrectos.");
