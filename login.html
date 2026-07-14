@@ -13,34 +13,49 @@
     </form>
 
     <script type="module">
+        // CORRECCIÓN: Se agregaron las rutas completas y oficiales de la CDN de Firebase
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, signInWithEmailAndPassword } from "https://gstatic.com";
 
-        // MISMOS DATOS DE CONFIGURACIÓN QUE EN REGISTRO
+        // Tus datos reales de Firebase integrados
         const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_AUTH_DOMAIN",
-            projectId: "TU_PROJECT_ID",
-            storageBucket: "TU_STORAGE_BUCKET",
-            messagingSenderId: "TU_MESSAGING_SENDER_ID",
-            appId: "TU_APP_ID"
+          apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
+          authDomain: "night-f23fa.firebaseapp.com",
+          projectId: "night-f23fa",
+          storageBucket: "night-f23fa.firebasestorage.app",
+          messagingSenderId: "386862893155",
+          appId: "1:386862893155:web:a42673375ea87209389056",
+          measurementId: "G-ZSF58H9VE4"
         };
 
+        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // Escuchar el evento de envío del formulario
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
+            // Intentar iniciar sesión
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     alert("¡Bienvenido de nuevo!");
                     window.location.href = "perfil.html"; // Redirige a la zona privada
                 })
                 .catch((error) => {
-                    alert("Error al iniciar sesión: " + error.message);
+                    // Manejo de errores comunes para el usuario
+                    let mensajeError = "Error al iniciar sesión.";
+                    if (error.code === 'auth/invalid-credential') {
+                        mensajeError = "El correo o la contraseña son incorrectos.";
+                    } else if (error.code === 'auth/user-not-found') {
+                        mensajeError = "El usuario no existe.";
+                    } else if (error.code === 'auth/wrong-password') {
+                        mensajeError = "Contraseña incorrecta.";
+                    }
+                    alert(mensajeError);
+                    console.error("Detalle del error:", error.message);
                 });
         });
     </script>
