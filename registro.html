@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrarse</title>
-    <!-- Librerías Universales Compatibles de Firebase -->
+    <!-- Librerías estables de Firebase v8 -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 </head>
@@ -13,7 +13,7 @@
     <form id="registerForm">
         <input type="email" id="email" placeholder="Correo Electrónico" required><br><br>
         <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br><br>
-        <button type="submit">Registrarme</button>
+        <button type="submit" id="btnRegistrar">Registrarme</button>
     </form>
     <br>
     <p>¿Ya tienes cuenta? <a href="index.html">Inicia sesión aquí</a></p>
@@ -29,20 +29,30 @@
           measurementId: "G-ZSF58H9VE4"
         };
 
+        // Inicializar Firebase básico
         firebase.initializeApp(firebaseConfig);
 
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            const boton = document.getElementById('btnRegistrar');
+            boton.innerText = "Enviando datos...";
+            boton.disabled = true;
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(function() {
-                    alert("¡Usuario registrado con éxito!");
+                .then(function(userCredential) {
+                    alert("¡ÉXITO! Tu usuario ha sido guardado.");
                     window.location.href = "perfil.html";
                 })
                 .catch(function(error) {
-                    alert("Error al registrar en Firebase: " + error.message);
+                    boton.innerText = "Registrarme";
+                    boton.disabled = false;
+                    // Alerta que te dirá el error real si tu panel sigue bloqueado
+                    alert("Error detectado: " + error.message);
+                    console.error(error);
                 });
         });
     </script>
