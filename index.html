@@ -2,25 +2,26 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registrarse</title>
+    <title>Iniciar Sesión</title>
 </head>
 <body>
-    <h2>Crear Cuenta Nueva</h2>
-    <form id="registerForm">
-        <input type="email" id="email" placeholder="Correo Electrónico" required><br><br>
-        <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br><br>
-        <button type="submit">Registrarme</button>
+    <h2>Iniciar Sesión</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Correo" required><br><br>
+        <input type="password" id="password" placeholder="Contraseña" required><br><br>
+        <button type="submit">Entrar</button>
     </form>
     <br>
-    <p>¿Ya tienes cuenta? <a href="perfil.html">Inicia sesión aquí</a></p>
+    <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
 
     <script type="module">
+        // URLs oficiales y completas corregidas
         import { initializeApp } from "https://gstatic.com";
-        import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
+        import { getAuth, signInWithEmailAndPassword } from "https://gstatic.com";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com",
+          authDomain: "night-f23fa.firebaseapp.com",
           projectId: "night-f23fa",
           storageBucket: "night-f23fa.firebasestorage.app",
           messagingSenderId: "386862893155",
@@ -31,28 +32,23 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        document.getElementById('registerForm').addEventListener('submit', (e) => {
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Crear usuario en Firebase
-            createUserWithEmailAndPassword(auth, email, password)
+            signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    alert("¡Cuenta creada con éxito! Redirigiendo a tu perfil...");
-                    window.location.href = "perfil.html";
+                    alert("¡Bienvenido de nuevo!");
+                    window.location.href = "perfil.html"; 
                 })
                 .catch((error) => {
-                    let mensajeError = "Error al registrar usuario.";
-                    if (error.code === 'auth/email-already-in-use') {
-                        mensajeError = "Este correo electrónico ya está registrado.";
-                    } else if (error.code === 'auth/weak-password') {
-                        mensajeError = "La contraseña debe tener al menos 6 caracteres.";
-                    } else if (error.code === 'auth/invalid-email') {
-                        mensajeError = "El formato del correo electrónico no es válido.";
+                    let mensajeError = "Error al iniciar sesión.";
+                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                        mensajeError = "El correo o la contraseña son incorrectos.";
                     }
                     alert(mensajeError);
-                    console.error("Detalle:", error.message);
+                    console.error("Detalle del error:", error.message);
                 });
         });
     </script>
