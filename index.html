@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Cuenta - Registro</title>
-    <!-- SDK Universal v8 de Firebase para evitar errores de carga estática -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <title>Crear Cuenta - Registro Directo</title>
 </head>
 <body>
     <h2>Crear Cuenta Nueva</h2>
@@ -17,43 +14,58 @@
     </form>
     
     <script>
-        // Tus credenciales reales del proyecto night-f23fa
-        const firebaseConfig = {
-          apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com",
-          projectId: "night-f23fa",
-          storageBucket: "night-f23fa.firebasestorage.app",
-          messagingSenderId: "386862893155",
-          appId: "1:386862893155:web:a42673375ea87209389056",
-          measurementId: "G-ZSF58H9VE4"
-        };
-
-        // Inicialización del servicio
-        firebase.initializeApp(firebaseConfig);
-
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Registrando en Firebase...";
+            boton.innerText = "Conectando directamente con el servidor...";
             boton.disabled = true;
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Petición directa de creación de usuario
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(function(userCredential) {
-                    alert("¡ÉXITO COMPLETO! Tu usuario se guardó en Firebase.");
-                    // Cambia esto solo si tienes un archivo llamado perfil.html creado en tu GitHub
-                    window.location.href = "perfil.html";
+            // Tu API Key real del proyecto night-f23fa
+            const apiKey = "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc";
+            
+            // Endpoint nativo de la API de Google para crear usuarios en Firebase Auth
+            const url = `https://googleapis.com{apiKey}`;
+
+            // Petición directa HTTP para saltarse los bloqueos de librerías
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    returnSecureToken: true
                 })
-                .catch(function(error) {
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    // Si Firebase rechaza los datos, nos dirá el motivo exacto en una alerta
+                    alert("Firebase rechazó la solicitud: " + data.error.message);
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
-                    // Alerta nativa que te notificará el diagnóstico si Firebase rechaza la petición
-                    alert("Firebase respondió: " + error.message);
-                });
+                } else {
+                    // Si todo es correcto, guardará al usuario en la consola
+                    alert("¡ÉXITO ABSOLUTO! Usuario registrado directamente en la base de datos.");
+                    console.log("Datos del usuario creado:", data);
+                    
+                    // Guarda el token en el navegador para mantener la sesión
+                    localStorage.setItem('userToken', data.idToken);
+                    
+                    // Intenta redirigir (asegúrate de tener este archivo creado en tu GitHub)
+                    window.location.href = "perfil.html";
+                }
+            })
+            .catch(error => {
+                alert("Error crítico de red/bloqueador: " + error.message);
+                boton.innerText = "Registrarme";
+                boton.disabled = false;
+            });
         });
     </script>
 </body>
