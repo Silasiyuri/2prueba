@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión</title>
+</head>
+<body>
+    <h2>Iniciar Sesión</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Correo" required><br><br>
+        <input type="password" id="password" placeholder="Contraseña" required><br><br>
+        <button type="submit">Entrar</button>
+    </form>
+
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+        import { getAuth, signInWithEmailAndPassword } from "https://gstatic.com";
+
+        // MISMOS DATOS DE CONFIGURACIÓN QUE EN REGISTRO
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_AUTH_DOMAIN",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_STORAGE_BUCKET",
+            messagingSenderId: "TU_MESSAGING_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("¡Bienvenido de nuevo!");
+                    window.location.href = "perfil.html"; // Redirige a la zona privada
+                })
+                .catch((error) => {
+                    alert("Error al iniciar sesión: " + error.message);
+                });
+        });
+    </script>
+</body>
+</html>
