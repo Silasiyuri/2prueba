@@ -32,6 +32,7 @@
     </style>
 </head>
 <body>
+
     <h2>Crear Cuenta Nueva (2NIGHT)</h2>
     <form id="registerForm">
         <input type="email" id="email" placeholder="Correo Electrónico" required><br>
@@ -39,23 +40,26 @@
         <button type="submit" id="btnRegistrar">Registrarme</button>
     </form>
     
-    <script type="module">
-        // 1. RUTAS COMPLETAS: Direcciones web oficiales hacia los archivos JavaScript de Firebase
-        import { initializeApp } from "https://gstatic.com";
-        import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
+    <!-- LIBRERÍAS DE COMPATIBILIDAD: Cargan los servicios de Firebase de forma tradicional y directa sin usar "import" -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 
-        // 2. CONFIGURACIÓN REPARADA: Conexión directa con tu base de datos de 2NIGHT
+    <script>
+        // Configuración oficial obtenida de tu nuevo proyecto "night-oficial"
         const firebaseConfig = {
-          apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "night-f23fa.firebaseapp.com",
-          projectId: "night-f23fa"
+          apiKey: "AIzaSyCpgq6V2u0_SUry-XNcoTBd-3GzKpho2BM",
+          authDomain: "night-oficial.firebaseapp.com",
+          projectId: "night-oficial",
+          storageBucket: "night-oficial.firebasestorage.app",
+          messagingSenderId: "1058509818023",
+          appId: "1:1058509818023:web:98bdad36b5685a220b3382"
         };
 
-        // Inicializar la aplicación
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        // Inicializar Firebase Clásico
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-        // Controlar el formulario de la página
+        // Controlar el evento de envío del formulario
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -63,28 +67,27 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Bloquear el botón para evitar clics repetidos
+            // Bloquear interfaz para mitigar registros duplicados
             boton.innerText = "Registrando en 2NIGHT...";
             boton.disabled = true;
 
-            // Enviar datos a Firebase Authentication
-            createUserWithEmailAndPassword(auth, email, password)
+            // Petición directa al servidor para guardar el usuario
+            auth.createUserWithEmailAndPassword(email, password)
                 .then(function(userCredential) {
                     alert("¡ÉXITO TOTAL! El usuario se guardó en tu panel de 2NIGHT.");
                     window.location.href = "perfil.html";
                 })
                 .catch(function(error) {
-                    // Si el servidor responde con un error, se reactiva el formulario
+                    // Si ocurre un error, devolvemos el botón a su estado normal
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
                     
-                    // Alerta que muestra el motivo exacto del fallo
-                    alert("Respuesta de Firebase: " + error.message);
-                    
-                    console.error("Código de error:", error.code);
-                    console.error("Mensaje completo:", error.message);
+                    // Alerta con el mensaje descriptivo exacto
+                    alert("Mensaje del Servidor: " + error.message);
+                    console.error("Código de error de Firebase:", error.code);
                 });
         });
     </script>
+
 </body>
 </html>
