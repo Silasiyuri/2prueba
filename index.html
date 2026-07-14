@@ -3,39 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico 2NIGHT</title>
+    <title>Conexión 2NIGHT</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 80vh; }
-        .container { max-width: 400px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 380px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h2 { text-align: center; margin-bottom: 20px; color: #111; }
         input { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button { width: 100%; padding: 12px; background-color: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        .alert-box { margin-top: 15px; padding: 12px; font-size: 14px; border-radius: 4px; text-align: center; font-weight: bold; display: none; }
+        button { width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:disabled { background-color: #cccccc; }
+        .alert-box { margin-top: 15px; padding: 12px; font-size: 14px; border-radius: 4px; display: none; text-align: center; font-weight: bold; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; text-align: left; font-family: monospace; white-space: pre-wrap; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Probador de Registro (2NIGHT)</h2>
-    <form id="registerForm">
-        <input type="email" id="email" placeholder="Correo electrónico de prueba" required>
-        <input type="password" id="password" placeholder="Contraseña (mínimo 6 letras)" required>
-        <button type="submit" id="btnRegistrar">FORZAR REGISTRO</button>
+    <h2>Registro Forzado (2NIGHT)</h2>
+    <form id="mainForm">
+        <input type="email" id="userEmailInput" placeholder="Correo electrónico" required>
+        <input type="password" id="userPassInput" placeholder="Contraseña (mínimo 6 caracteres)" required>
+        <button type="submit" id="submitBtn">PROBAR REGISTRO AHORA</button>
     </form>
-    
-    <!-- Aquí aparecerá el error real detallado -->
-    <div id="statusMessage" class="alert-box"></div>
+    <div id="logMessage" class="alert-box"></div>
 </div>
 
-<!-- LIBRERÍAS CLÁSICAS (Sin bloqueos de módulos) -->
+<!-- Scripts de Integración Directa (Librerías v8) -->
 <script src="https://gstatic.com"></script>
 <script src="https://gstatic.com"></script>
 
 <script>
-    // Tus credenciales oficiales de night-oficial
-    var firebaseConfig = {
+    // Configuración con tus credenciales verificadas
+    var config2Night = {
       apiKey: "AIzaSyCpgq6V2u0_SUry-XNcoTBd-3GzKpho2BM",
       authDomain: "night-oficial.firebaseapp.com",
       projectId: "night-oficial",
@@ -44,51 +43,41 @@
       appId: "1:1058509818023:web:98bdad36b5685a220b3382"
     };
 
-    // Inicializar de manera segura
-    try {
-        firebase.initializeApp(firebaseConfig);
-        var auth = firebase.auth();
-    } catch(e) {
-        var statusBox = document.getElementById('statusMessage');
-        statusBox.innerText = "ERROR AL INICIALIZAR FIREBASE:\n" + e.message;
-        statusBox.className = "alert-box error";
-        statusBox.style.display = "block";
-    }
+    // Inicialización del servicio de Google
+    firebase.initializeApp(config2Night);
+    var firebaseAuthInstance = firebase.auth();
 
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Escuchador del formulario
+    document.getElementById('mainForm').addEventListener('submit', function(event) {
+        event.preventDefault();
         
-        var boton = document.getElementById('btnRegistrar');
-        var statusBox = document.getElementById('statusMessage');
-        var email = document.getElementById('email').value.trim();
-        var password = document.getElementById('password').value;
+        var boton = document.getElementById('submitBtn');
+        var logBox = document.getElementById('logMessage');
+        var emailValue = document.getElementById('userEmailInput').value.trim();
+        var passValue = document.getElementById('userPassInput').value;
 
-        boton.innerText = "CONECTANDO CON GOOGLE...";
+        boton.innerText = "ENVIANDO DATOS A GOOGLE...";
         boton.disabled = true;
-        statusBox.style.display = "none";
+        logBox.style.display = "none";
 
-        // Petición directa a los servidores de Firebase
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(function(userCredential) {
-                statusBox.innerText = "¡ÉXITO REAL! Usuario guardado. Revisa tu consola de Firebase.";
-                statusBox.className = "alert-box success";
-                statusBox.style.display = "block";
-                boton.innerText = "FORZAR REGISTRO";
+        // Intento de alta directa
+        firebaseAuthInstance.createUserWithEmailAndPassword(emailValue, passValue)
+            .then(function(result) {
+                logBox.innerText = "¡CONEXIÓN EXITOSA! Usuario creado. Ya aparece en tu lista de Firebase.";
+                logBox.className = "alert-box success";
+                logBox.style.display = "block";
+                boton.innerText = "PROBAR REGISTRO AHORA";
                 boton.disabled = false;
             })
-            .catch(function(error) {
-                // CAPTURA TODO EL ERROR Y LO MUESTRA EN PANTALLA
-                console.error(error);
+            .catch(function(err) {
+                console.error(err);
                 
-                var textoExplicativo = "❌ ERROR DE FIREBASE ENCONTRADO:\n\n" + 
-                                       "• Código: " + error.code + "\n" +
-                                       "• Mensaje: " + error.message;
+                // Muestra el motivo exacto por el cual Google bloquea la petición
+                logBox.innerText = "RESPUESTA DE ERROR:\n" + err.message;
+                logBox.className = "alert-box error";
+                logBox.style.display = "block";
                 
-                statusBox.innerText = textoExplicativo;
-                statusBox.className = "alert-box error";
-                statusBox.style.display = "block";
-                
-                boton.innerText = "FORZAR REGISTRO";
+                boton.innerText = "PROBAR REGISTRO AHORA";
                 boton.disabled = false;
             });
     });
