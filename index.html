@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Usuarios</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #121214; color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .card { background-color: #202024; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; border: 1px solid #29292e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2 { font-size: 20px; margin-bottom: 20px; color: #00cfec; text-align: center; }
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 6px; color: #a8a8b3; font-size: 13px; }
-        .form-group input { width: 100%; padding: 12px 14px; border: 2px solid #29292e; border-radius: 8px; background-color: #121214; color: #fff; font-size: 16px; outline: none; }
+        .form-group input { width: 100%; padding: 12px 14px; border: 2px solid #29292e; border-radius: 8px; background-color: #121214; color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s; }
         .form-group input:focus { border-color: #00cfec; }
-        button { width: 100%; padding: 14px; background-color: #00cfec; color: #121214; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button { width: 100%; padding: 14px; background-color: #00cfec; color: #121214; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
         button:hover { background-color: #0099bc; }
     </style>
 
-    <!-- Cargamos las librerías oficiales desde el CDN estable de Cloudflare -->
+    <!-- Carga de librerías estables desde servidores Cloudflare CDN (Antibloqueos) -->
     <script src="https://cloudflare.com"></script>
     <script src="https://cloudflare.com"></script>
 </head>
@@ -39,9 +39,9 @@
     </div>
 
     <script>
-        // Configuración oficial completa de tu app 'night-sistema'
+        // Configuración oficial completa integrada con tu NUEVA API KEY
         const firebaseConfig = {
-            apiKey: "AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0",
+            apiKey: "AIzaSyDm069FEpCKrIdplgEiF7hTvITnz0mZNd4",
             authDomain: "://firebaseapp.com",
             projectId: "night-sistema",
             storageBucket: "night-sistema.firebasestorage.app",
@@ -49,26 +49,35 @@
             appId: "1:807108186238:web:d36ee74cf0e2e095e3c82f"
         };
 
-        // Inicialización nativa directa sin alertas de pre-carga
+        // Inicializamos Firebase en el navegador de forma nativa
         if (typeof firebase !== 'undefined') {
             firebase.initializeApp(firebaseConfig);
         }
 
+        // Captura y transmisión de datos hacia la nube de Google
         document.getElementById('registro-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Transmisión directa hacia las bases de datos de Firebase
             firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    alert("🎉 ¡REGISTRO EXITOSO!\n\nUsuario guardado de forma permanente en la nube.");
+                    // Alerta de éxito total
+                    alert("🎉 ¡REGISTRO EXITOSO!\n\nEl usuario ha sido guardado correctamente en tu panel de Firebase.");
                     document.getElementById('registro-form').reset();
                 })
                 .catch((error) => {
-                    // Si Google rechaza los datos, una alerta te dirá el código de respuesta real
-                    alert("Respuesta del Servidor:\n\nCódigo: " + error.code + "\nMensaje: " + error.message);
+                    // El bloque catch forzará un aviso visual en tu pantalla con la respuesta directa del servidor
+                    if (error.code === 'auth/operation-not-allowed') {
+                        alert("❌ CONFIGURACIÓN REQUERIDA EN FIREBASE:\n\nTu nueva clave funciona, pero el método de registro por correo está apagado en tu cuenta.\n\nSOLUCIÓN:\n1. Entra a tu consola de Firebase (://google.com).\n2. Ve a Authentication > pestaña Sign-in method.\n3. Activa el proveedor de 'Correo electrónico/Contraseña' y guarda los cambios.");
+                    } else if (error.code === 'auth/email-already-in-use') {
+                        alert("Error de Firebase: Este correo electrónico ya está registrado por otro usuario.");
+                    } else if (error.code === 'auth/weak-password') {
+                        alert("Error de Firebase: La contraseña es muy corta (debe tener mínimo 6 caracteres).");
+                    } else {
+                        alert("Respuesta de Firebase:\n\nCódigo: " + error.code + "\nMensaje: " + error.message);
+                    }
                 });
         });
     </script>
