@@ -3,38 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conexión 2NIGHT</title>
+    <title>Sistema de Registro 2NIGHT</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 80vh; }
-        .container { max-width: 380px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 360px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h2 { text-align: center; margin-bottom: 20px; color: #111; }
         input { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
         button { width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        button:disabled { background-color: #cccccc; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
         .alert-box { margin-top: 15px; padding: 12px; font-size: 14px; border-radius: 4px; display: none; text-align: center; font-weight: bold; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; text-align: left; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; text-align: left; font-family: monospace; white-space: pre-wrap; }
+        .user-email { font-weight: bold; color: #007bff; }
+        .btn-logout { background-color: #dc3545; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px;}
+        .btn-logout:hover { background-color: #c82333; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Registro Forzado (2NIGHT)</h2>
-    <form id="mainForm">
-        <input type="email" id="userEmailInput" placeholder="Correo electrónico" required>
-        <input type="password" id="userPassInput" placeholder="Contraseña (mínimo 6 caracteres)" required>
-        <button type="submit" id="submitBtn">PROBAR REGISTRO AHORA</button>
+<!-- VISTA 1: Formulario de Registro -->
+<div class="container" id="vistaRegistro">
+    <h2>Crear Cuenta (2NIGHT)</h2>
+    <form id="registerForm">
+        <input type="email" id="email" placeholder="Correo Electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required>
+        <button type="submit" id="btnRegistrar">Registrarme</button>
     </form>
-    <div id="logMessage" class="alert-box"></div>
+    <div id="statusMessage" class="alert-box"></div>
 </div>
 
-<!-- Scripts de Integración Directa (Librerías v8) -->
+<!-- VISTA 2: Panel de Perfil (Oculto inicialmente) -->
+<div class="container" id="vistaPerfil" style="display: none; text-align: center;">
+    <h2>¡Bienvenido a 2NIGHT!</h2>
+    <p>Has ingresado correctamente a tu panel oficial.</p>
+    <p>Tu usuario es: <span id="userEmail" class="user-email">Cargando...</span></p>
+    <button class="btn-logout" id="btnCerrarSesion">Cerrar Sesión</button>
+</div>
+
+<!-- Scripts de Integración Tradicional (Evitan bloqueos de importación) -->
 <script src="https://gstatic.com"></script>
 <script src="https://gstatic.com"></script>
 
 <script>
-    // Configuración con tus credenciales verificadas
-    var config2Night = {
+    // Configuración con tus credenciales asignadas de night-oficial
+    var firebaseConfig = {
       apiKey: "AIzaSyCpgq6V2u0_SUry-XNcoTBd-3GzKpho2BM",
       authDomain: "night-oficial.firebaseapp.com",
       projectId: "night-oficial",
@@ -43,43 +55,61 @@
       appId: "1:1058509818023:web:98bdad36b5685a220b3382"
     };
 
-    // Inicialización del servicio de Google
-    firebase.initializeApp(config2Night);
-    var firebaseAuthInstance = firebase.auth();
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    var auth = firebase.auth();
 
-    // Escuchador del formulario
-    document.getElementById('mainForm').addEventListener('submit', function(event) {
-        event.preventDefault();
+    // Guardián automático de interfaz
+    auth.onAuthStateChanged(function(user) {
+        var vistaRegistro = document.getElementById('vistaRegistro');
+        var vistaPerfil = document.getElementById('vistaPerfil');
         
-        var boton = document.getElementById('submitBtn');
-        var logBox = document.getElementById('logMessage');
-        var emailValue = document.getElementById('userEmailInput').value.trim();
-        var passValue = document.getElementById('userPassInput').value;
+        if (user) {
+            document.getElementById('userEmail').innerText = user.email;
+            vistaRegistro.style.display = 'none';
+            vistaPerfil.style.display = 'block';
+        } else {
+            vistaRegistro.style.display = 'block';
+            vistaPerfil.style.display = 'none';
+        }
+    });
 
-        boton.innerText = "ENVIANDO DATOS A GOOGLE...";
+    // Controlador del evento de registro
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        var boton = document.getElementById('btnRegistrar');
+        var statusBox = document.getElementById('statusMessage');
+        var email = document.getElementById('email').value.trim();
+        var password = document.getElementById('password').value;
+
+        boton.innerText = "PROCESANDO REGISTRO...";
         boton.disabled = true;
-        logBox.style.display = "none";
+        statusBox.style.display = "none";
 
-        // Intento de alta directa
-        firebaseAuthInstance.createUserWithEmailAndPassword(emailValue, passValue)
-            .then(function(result) {
-                logBox.innerText = "¡CONEXIÓN EXITOSA! Usuario creado. Ya aparece en tu lista de Firebase.";
-                logBox.className = "alert-box success";
-                logBox.style.display = "block";
-                boton.innerText = "PROBAR REGISTRO AHORA";
-                boton.disabled = false;
+        // Envío directo a Firebase
+        auth.createUserWithEmailAndPassword(email, password)
+            .then(function(userCredential) {
+                statusBox.innerText = "¡REGISTRO EXITOSO!\nTu cuenta ha sido creada en la base de datos.";
+                statusBox.className = "alert-box success";
+                statusBox.style.display = "block";
             })
-            .catch(function(err) {
-                console.error(err);
+            .catch(function(error) {
+                console.error("Detalle completo del fallo de red:", error);
                 
-                // Muestra el motivo exacto por el cual Google bloquea la petición
-                logBox.innerText = "RESPUESTA DE ERROR:\n" + err.message;
-                logBox.className = "alert-box error";
-                logBox.style.display = "block";
+                // Forzar el mensaje explicativo en la interfaz
+                statusBox.innerText = "ERROR ENCONTRADO:\n" + error.message;
+                statusBox.className = "alert-box error";
+                statusBox.style.display = "block";
                 
-                boton.innerText = "PROBAR REGISTRO AHORA";
+                boton.innerText = "Registrarme";
                 boton.disabled = false;
             });
+    });
+
+    // Control de salida segura
+    document.getElementById('btnCerrarSesion').addEventListener('click', function() {
+        auth.signOut();
     });
 </script>
 
