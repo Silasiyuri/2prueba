@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Cuenta - Servidor Seguro</title>
-    <!-- Librerías oficiales v8 cargadas de forma nativa e inmunes a filtros de red -->
+    <title>Crear Cuenta</title>
+    <!-- Librerías estables de Firebase -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 </head>
@@ -17,10 +17,9 @@
     </form>
     
     <script>
-        // Configuración real e interna de tu base de datos Firebase night-f23fa
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "night-f23fa.firebaseapp.com",
+          authDomain: "://firebaseapp.com",
           projectId: "night-f23fa",
           storageBucket: "night-f23fa.firebasestorage.app",
           messagingSenderId: "386862893155",
@@ -28,7 +27,7 @@
           measurementId: "G-ZSF58H9VE4"
         };
 
-        // Inicialización nativa mediante el SDK de Google
+        // Inicializar Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -37,25 +36,21 @@
             e.preventDefault();
             
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Registrando de forma segura...";
+            boton.innerText = "Registrando en la nube...";
             boton.disabled = true;
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Uso de la función nativa del SDK para saltar bloqueos del navegador
             firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then(function(userCredential) {
-                    alert("¡ÉXITO TOTAL! Tu usuario ha sido registrado en Firebase.");
+                    alert("¡ÉXITO TOTAL! Usuario guardado en Firebase.");
                     window.location.href = "perfil.html";
                 })
                 .catch(function(error) {
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
-                    
-                    // Alerta que te dirá si el correo ya existe o si falta habilitar algo en consola
-                    alert("Firebase respondió: " + error.message);
-                    console.error("Detalle:", error);
+                    alert("Respuesta de Firebase: " + error.message);
                 });
         });
     </script>
