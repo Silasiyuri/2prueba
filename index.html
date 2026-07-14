@@ -13,6 +13,7 @@
         button:disabled { background-color: #cccccc; cursor: not-allowed; }
         .alert-box { margin-top: 15px; padding: 12px; font-size: 14px; border-radius: 4px; display: none; text-align: center; font-weight: 500; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
@@ -26,16 +27,16 @@
     </form>
     <div id="statusMessage" class="alert-box"></div>
 </div>
-    
-<!-- Conexiones estables de Firebase versión compatibilidad -->
+
+<!-- Scripts Oficiales de Firebase (Versión de compatibilidad v8) -->
 <script src="https://gstatic.com"></script>
 <script src="https://gstatic.com"></script>
 
 <script>
-    // Configuración real de tu nuevo proyecto night-oficial
+    // Configuración corregida de tu proyecto Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCpgq6V2u0_SUry-XNcoTBd-3GzKpho2BM",
-      authDomain: "://firebaseapp.com",
+      authDomain: "://firebaseapp.com", // URL corregida
       projectId: "night-oficial",
       storageBucket: "night-oficial.firebasestorage.app",
       messagingSenderId: "1058509818023",
@@ -54,26 +55,40 @@
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
 
+        // Estado de carga
         boton.innerText = "Registrando en 2NIGHT...";
         boton.disabled = true;
         statusBox.style.display = "none";
 
-        // Lanzar petición web a tu nuevo panel de control
+        // Petición real de creación de usuario en Firebase Auth
         auth.createUserWithEmailAndPassword(email, password)
             .then(function(userCredential) {
+                // Registro exitoso
                 mostrarAlerta(statusBox, "¡ÉXITO TOTAL! Registrado en tu panel night-oficial.", "success");
-                setTimeout(() => { window.location.href = "perfil.html"; }, 2000);
+                setTimeout(() => { 
+                    window.location.href = "perfil.html"; 
+                }, 2000);
             })
             .catch(function(error) {
-                // ANULADOR DE RESTRICCIÓN DE NAVEGADOR: Si tu PC bloquea la salida, el sistema intercepta el fallo y guarda los datos de forma local instantánea
-                console.warn("Fallo de red detectado. Activando motor de almacenamiento persistente.");
+                // Manejo de errores reales de Firebase
+                console.error("Error en el registro:", error);
                 
-                let usuarios = JSON.parse(localStorage.getItem('bd_local_night')) || [];
-                usuarios.push({ email: email, password: password });
-                localStorage.setItem('bd_local_night', JSON.stringify(usuarios));
+                let mensajeError = "Ocurrió un error. Inténtalo de nuevo.";
+                
+                // Personalizar mensajes según el error de Firebase
+                if (error.code === 'auth/email-already-in-use') {
+                    mensajeError = "Este correo ya está registrado.";
+                } else if (error.code === 'auth/weak-password') {
+                    mensajeError = "La contraseña debe tener al menos 6 caracteres.";
+                } else if (error.code === 'auth/invalid-email') {
+                    mensajeError = "El formato del correo no es válido.";
+                }
 
-                mostrarAlerta(statusBox, "¡ÉXITO TOTAL! Usuario guardado correctamente.", "success");
-                setTimeout(() => { window.location.href = "perfil.html"; }, 2000);
+                mostrarAlerta(statusBox, mensajeError, "error");
+                
+                // Reactivar el botón para que el usuario pueda corregir los datos
+                boton.innerText = "Registrarme";
+                boton.disabled = false;
             });
     });
 
