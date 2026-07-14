@@ -14,18 +14,18 @@
     </form>
     
     <script type="module">
-        // IMPORTANTE: Se usan los módulos oficiales v10 exigidos por Identity Platform
+        // IMPORTANTE: Módulos oficiales v10 obligatorios para proyectos con Identity Platform activa
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
 
-        // Configuración real obtenida de tu cuenta de servicio vinculada
+        // Credenciales reales vinculadas a tu cuenta de servicio de 2NIGHT
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
           authDomain: "://firebaseapp.com",
           projectId: "night-f23fa"
         };
 
-        // Inicializar Firebase
+        // Inicialización segura del SDK
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
@@ -33,23 +33,27 @@
             e.preventDefault();
             
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Registrando en 2NIGHT...";
+            boton.innerText = "Conectando con 2NIGHT...";
             boton.disabled = true;
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Llamada modular obligatoria
+            // Petición de registro a través del SDK Modular
             createUserWithEmailAndPassword(auth, email, password)
                 .then(function(userCredential) {
-                    alert("¡ÉXITO! El usuario se ha guardado en tu panel de 2NIGHT.");
+                    alert("¡ÉXITO TOTAL! Tu usuario se ha registrado en el proyecto 2NIGHT.");
+                    // Guarda el token en el navegador antes de redirigir
+                    localStorage.setItem('userToken', userCredential.user.accessToken);
                     window.location.href = "perfil.html";
                 })
                 .catch(function(error) {
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
-                    // Alerta que nos dirá si falta activar algún permiso en la consola
-                    alert("Respuesta del servidor: " + error.message);
+                    
+                    // Alerta que te dirá el error exacto en pantalla si falta un permiso en tu consola
+                    alert("Firebase 2NIGHT respondió: " + error.message);
+                    console.error(error);
                 });
         });
     </script>
