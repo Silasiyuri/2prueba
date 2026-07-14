@@ -8,7 +8,6 @@
     <h2>Panel de Usuario</h2>
     <div id="loading">Cargando datos del usuario...</div>
     
-    <!-- Este bloque estará oculto hasta confirmar que el usuario inició sesión -->
     <div id="content" style="display: none;">
         <p>¡Hola! Has ingresado correctamente a la zona privada.</p>
         <p><strong>Tu correo:</strong> <span id="userEmail"></span></p>
@@ -17,11 +16,10 @@
     </div>
 
     <script type="module">
-        // CORRECCIÓN 1: Rutas CDN oficiales y completas para que el navegador cargue Firebase
+        // URLs oficiales y completas corregidas
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, onAuthStateChanged, signOut } from "https://gstatic.com";
 
-        // CORRECCIÓN 2: authDomain corregido con el subdominio de tu proyecto
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
           authDomain: "night-f23fa.firebaseapp.com", 
@@ -32,27 +30,22 @@
           measurementId: "G-ZSF58H9VE4"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Guardián de ruta: Verifica en tiempo real si el usuario está autenticado
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Usuario autenticado: Mostrar datos y ocultar el mensaje de carga
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
                 
                 document.getElementById('userEmail').innerText = user.email;
                 document.getElementById('userUid').innerText = user.uid;
             } else {
-                // Usuario NO autenticado: Expulsar a la página de login
                 alert("No tienes permiso. Por favor, inicia sesión primero.");
                 window.location.href = "index.html"; 
             }
         });
 
-        // Evento para Cerrar Sesión
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth)
                 .then(() => {
@@ -61,7 +54,6 @@
                 })
                 .catch((error) => {
                     alert("Error al cerrar sesión.");
-                    console.error(error);
                 });
         });
     </script>
