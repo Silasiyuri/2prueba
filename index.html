@@ -3,98 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consola de Registro en la Nube - Firebase</title>
+    <title>Inyector Monolítico Autónomo - Firebase</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-        body { background-color: #0c0c0e; color: #f5f5f7; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 30px; }
-        h1 { font-size: 24px; margin-bottom: 25px; color: #fff; text-align: center; }
-        .wrapper { display: flex; gap: 24px; width: 100%; max-width: 900px; flex-wrap: wrap; }
-        .panel-form { background-color: #16161a; padding: 30px; border-radius: 12px; flex: 1; min-width: 320px; border: 1px solid #222227; }
-        h2 { font-size: 18px; margin-bottom: 20px; color: #00cfec; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0c0c0e; color: #f5f5f7; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 40px; }
+        h1 { font-size: 24px; margin-bottom: 5px; color: #fff; text-align: center; }
+        .subtitle { font-size: 13px; color: #00ff66; margin-bottom: 25px; text-align: center; font-weight: bold; background: rgba(0,255,102,0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(0,255,102,0.2); }
+        .card { background-color: #16161a; padding: 30px; border-radius: 12px; width: 100%; max-width: 420px; border: 1px solid #222227; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { font-size: 18px; margin-bottom: 20px; color: #00cfec; text-align: center; }
         .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; margin-bottom: 6px; color: #a1a1aa; font-size: 13px; }
-        .form-group input { width: 100%; padding: 12px 14px; border: 2px solid #2d2d35; border-radius: 8px; background-color: #0c0c0e; color: #fff; font-size: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #a1a1aa; font-size: 13px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 12px 14px; border: 2px solid #2d2d35; border-radius: 8px; background-color: #0c0c0e; color: #fff; font-size: 16px; transition: border-color 0.2s; }
         .form-group input:focus { border-color: #00cfec; outline: none; }
-        button { width: 100%; padding: 14px; background-color: #00cfec; color: #0c0c0e; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        .monitor { background-color: #000000; border: 1px solid #222227; border-radius: 12px; padding: 20px; flex: 1; min-width: 320px; max-height: 400px; overflow-y: auto; font-family: monospace; }
-        .log-line { margin-bottom: 8px; font-size: 12px; line-height: 1.4; }
+        button { width: 100%; padding: 14px; background-color: #00cfec; color: #0c0c0e; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 700; transition: background-color 0.2s; }
+        button:hover { background-color: #00a8c0; }
+        .notice { font-size: 12px; font-family: monospace; background-color: #000; padding: 12px; border-radius: 6px; border: 1px solid #2d2d35; margin-bottom: 15px; color: #ffcc00; text-align: center; line-height: 1.4; }
     </style>
-
-    <!-- CARGA SEGURA DE FIREBASE SDK v8 -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
 </head>
 <body>
 
-    <h1>Consola de Registro en Producción</h1>
+    <h1>Consola Autónoma de Registro de Usuarios</h1>
+    <div class="subtitle">🛡️ Canal de Navegación Forzado para Safari</div>
 
-    <div class="wrapper">
-        <div class="panel-form">
-            <h2>Crear Cuenta de Usuario</h2>
-            <form id="formulario-registro">
-                <div class="form-group">
-                    <label>Correo Electrónico</label>
-                    <input type="email" id="correo-usuario" required placeholder="nombre@correo.com">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña de Acceso</label>
-                    <input type="password" id="clave-usuario" required placeholder="Mínimo 6 caracteres">
-                </div>
-                <button type="submit">Guardar en Servidor Remoto</button>
-            </form>
+    <div class="card">
+        <h2>Crear Nueva Cuenta</h2>
+        
+        <div class="notice">
+            📋 INFORME: Este formulario viaja como una petición de navegación pura (POST). Forzará a Safari a saltarse las restricciones de archivos locales.
         </div>
 
-        <div class="monitor">
-            <div style="color: #00ff66; border-bottom: 1px solid #222227; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold;">📋 INFORME DE FLUJO DE RED INMEDIATO:</div>
-            <div id="pantalla-logs"></div>
-        </div>
+        
+        
+            
+            <!-- Credenciales fijas de tu proyecto inyectadas en la petición -->
+            <input type="hidden" name="key" value="AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0">
+            <input type="hidden" name="returnSecureToken" value="true">
+
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <!-- Usamos tipo texto plano para evitar que Safari interfiera con validaciones internas -->
+                <input type="text" id="email" name="email" required placeholder="ejemplo@correo.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Contraseña del Sistema</label>
+                <input type="text" id="password" name="password" required placeholder="Mínimo 6 caracteres">
+            </div>
+            
+            <button type="submit">FORZAR GUARDADO EN FIREBASE</button>
+        </form>
     </div>
 
-    <script>
-        const logsDiv = document.getElementById('pantalla-logs');
-        const form = document.getElementById('formulario-registro');
-
-        function registrarLog(texto, color = '#f5f5f7') {
-            const t = new Date().toLocaleTimeString();
-            logsDiv.innerHTML += `<div class="log-line" style="color: ${color}">[${t}] ${texto}</div>`;
-            document.querySelector('.monitor').scrollTop = document.querySelector('.monitor').scrollHeight;
-        }
-
-        // Inicialización de tus credenciales verificadas
-        const firebaseConfig = {
-            apiKey: "AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0",
-            authDomain: "://firebaseapp.com",
-            projectId: "night-sistema"
-        };
-
-        if (typeof firebase !== 'undefined') {
-            firebase.initializeApp(firebaseConfig);
-            registrarLog("🚀 NÚCLEO INICIALIZADO: El sistema está listo esperando envíos.", "#00ff66");
-        } else {
-            registrarLog("❌ ERROR: El navegador bloqueó los archivos de Google.", "#ff3333");
-        }
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('correo-usuario').value;
-            const password = document.getElementById('clave-usuario').value;
-
-            registrarLog(`⚙️ Procesando credenciales para: ${email}`, "#fff");
-            registrarLog("📡 Transmitiendo paquete de red de forma remota...", "#ffcc00");
-
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    registrarLog(`🎉 ¡ÉXITO ROTUNDO! Usuario guardado automáticamente en la nube.`, "#00ff66");
-                    registrarLog(`🆔 UID asignado por Firebase: ${userCredential.user.uid}`, "#00ff66");
-                    form.reset();
-                })
-                .catch((error) => {
-                    registrarLog(`❌ OPERACIÓN RECHAZADA POR EL SERVIDOR`, "#ff3333");
-                    registrarLog(`Código técnico: ${error.code}`, "#ff3333");
-                    registrarLog(`Respuesta del servidor: ${error.message}`, "#ff3333");
-                });
-        });
-    </script>
 </body>
 </html>
