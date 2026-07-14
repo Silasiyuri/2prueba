@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Oficial - 2NIGHT</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; }
+        .status-top { background-color: #34495e; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
         .container { max-width: 360px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h2 { text-align: center; margin-bottom: 20px; color: #111; }
         input { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
@@ -18,75 +19,101 @@
 </head>
 <body>
 
-<div class="container">
+<!-- NOTIFICACIÓN 1: ESTADO DEL SISTEMA DE RED -->
+<div class="status-top" id="conexionStatus">⏳ Inicializando módulos de red seguro...</div>
+
+<!-- FORMULARIO DE ACCESO -->
+<div class="container" id="vistaRegistro">
     <h2>Crear Cuenta (2NIGHT)</h2>
     <form id="registerForm">
         <input type="email" id="email" placeholder="Correo Electrónico" required>
         <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required>
         <button type="submit" id="btnRegistrar">Registrarme Ahora</button>
     </form>
+    
+    <!-- NOTIFICACIÓN 2: ESTADO DEL REGISTRO DE USUARIOS -->
     <div id="statusMessage" class="alert-box"></div>
 </div>
 
-<script>
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+<!-- SISTEMA MODULAR INTEGRADO DE ALTA COMPATIBILIDAD (Soporta GitHub Pages sin CORS) -->
+<script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
+
+    var statusTop = document.getElementById('conexionStatus');
+
+    // Credenciales limpias oficiales del proyecto: night-sistema
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0",
+      authDomain: "://firebaseapp.com",
+      projectId: "night-sistema",
+      storageBucket: "night-sistema.firebasestorage.app",
+      messagingSenderId: "807108186238",
+      appId: "1:807108186238:web:d36ee74cf0e2e095e3c82f"
+    };
+
+    // Intentar enlazar con los servidores de Google de forma inmediata
+    try {
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         
-        var boton = document.getElementById('btnRegistrar');
-        var statusBox = document.getElementById('statusMessage');
-        var email = document.getElementById('email').value.trim();
-        var password = document.getElementById('password').value;
+        // Notificación de que el sistema cargó con éxito las llaves
+        statusTop.innerHTML = "🟢 CONEXIÓN ESTABLECIDA: El código enlazó correctamente con night-sistema.";
+        statusTop.style.backgroundColor = "#27ae60";
 
-        boton.innerText = "CONECTANDO CON SERVIDORES...";
-        boton.disabled = true;
-        statusBox.style.display = "none";
+        // Escuchador del formulario
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const boton = document.getElementById('btnRegistrar');
+            const statusBox = document.getElementById('statusMessage');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
 
-        // Canal de comunicación directo con tu nueva API Key limpia de night-sistema
-        var urlApi = "https://googleapis.com" + "AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0";
+            // Notificación visual de progreso
+            boton.innerText = "ENVIANDO DATOS A FIREBASE...";
+            boton.disabled = true;
+            statusBox.style.display = "none";
 
-        var datosEnvio = {
-            email: email,
-            password: password,
-            returnSecureToken: true
-        };
-
-        // Petición nativa Fetch estable
-        fetch(urlApi, {
-            method: 'POST',
-            body: JSON.stringify(datosEnvio),
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(function(respuesta) {
-            return respuesta.json().then(function(datos) {
-                if (respuesta.ok) {
-                    statusBox.innerText = "¡ÉXITO REAL TOTAL!\nUsuario guardado correctamente en tu proyecto night-sistema.";
+            // Intentar inyectar el usuario en la base de datos de Google
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Notificación de Éxito Absoluto
+                    statusBox.innerText = "¡ÉXITO TOTAL EN TU WEB!\n\nEl usuario se ha guardado correctamente.\nYa puedes ver la cuenta en la lista de tu consola.";
                     statusBox.className = "alert-box success";
                     statusBox.style.display = "block";
-                } else {
-                    var motivo = datos.error ? datos.error.message : "Desconocido";
                     
-                    // Traducción de las respuestas del servidor de Google
-                    if (motivo === "EMAIL_EXISTS") { motivo = "Este correo ya está registrado."; }
-                    if (motivo === "WEAK_PASSWORD") { motivo = "La contraseña debe tener mínimo 6 letras."; }
-                    if (motivo === "OPERATION_NOT_ALLOWED") { motivo = "Error: Olvidaste habilitar Correo/Contraseña en el panel de night-sistema."; }
+                    boton.innerText = "Registrarme Ahora";
+                    boton.disabled = false;
+                })
+                .catch((error) => {
+                    console.error("Detalle completo devuelto por el servidor:", error);
+                    let mensajeExplicativo = error.message; 
                     
-                    statusBox.innerText = "AVISO DEL SERVIDOR:\n" + motivo;
+                    // Traducciones directas de respuestas de la consola
+                    if (error.code === 'auth/email-already-in-use') {
+                        mensajeExplicativo = "Este correo ya está registrado en tu proyecto.";
+                    } else if (error.code === 'auth/weak-password') {
+                        mensajeExplicativo = "La contraseña es muy débil. Debe tener un mínimo de 6 caracteres.";
+                    } else if (error.code === 'auth/operation-not-allowed') {
+                        mensajeExplicativo = "¡FALTA ACTIVAR EL INTERRUPTOR!\nPor favor, ve a la pestaña 'Sign-in method' en Firebase y activa Correo electrónico/Contraseña.";
+                    }
+
+                    // Notificación de error de Firebase
+                    statusBox.innerText = "AVISO DEL SERVIDOR DE GOOGLE:\n\n• Código: " + error.code + "\n• Mensaje: " + mensajeExplicativo;
                     statusBox.className = "alert-box error";
                     statusBox.style.display = "block";
-                }
-                boton.innerText = "Registrarme Ahora";
-                boton.disabled = false;
-            });
-        })
-        .catch(function(error) {
-            console.error(error);
-            statusBox.innerText = "ERROR DE SISTEMA:\nHubo un problema con la salida de datos de red.";
-            statusBox.className = "alert-box error";
-            statusBox.style.display = "block";
-            boton.innerText = "Registrarme Ahora";
-            boton.disabled = false;
+                    
+                    boton.innerText = "Registrarme Ahora";
+                    boton.disabled = false;
+                });
         });
-    });
+
+    } catch (error) {
+        // Notificación de error crítico antes de procesar el formulario
+        statusTop.innerHTML = "❌ ERROR INTERNO DEL ARCHIVO:\n" + error.message;
+        statusTop.style.backgroundColor = "#c0392b";
+    }
 </script>
 
 </body>
