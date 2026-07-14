@@ -88,5 +88,23 @@
                 });
         });
     </script>
+
+    <script type="module">
+    // Añadir ?v=1 al final obliga al navegador a saltarse la caché y descargar el código real
+    import { initializeApp } from "https://gstatic.com";
+    import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
+      authDomain: "://firebaseapp.com",
+      projectId: "night-f23fa"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    // ... (El resto de tu lógica addEventListener se queda exactamente igual)
+</script>
+
 </body>
 </html>
