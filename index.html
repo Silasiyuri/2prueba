@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo Sistema de Registro - Conexión Directa</title>
+    <title>Sistema de Registro Limpio</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); }
-        h2 { font-size: 22px; margin-bottom: 24px; color: #38bdf8; text-align: center; font-weight: 700; }
+        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; }
+        h2 { font-size: 22px; margin-bottom: 24px; color: #38bdf8; text-align: center; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; font-weight: 500; }
-        .form-group input { width: 100%; padding: 12px 16px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s; }
-        .form-group input:focus { border-color: #38bdf8; }
-        button { width: 100%; padding: 14px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
-        button:hover { background-color: #0ea5e9; }
-        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; }
+        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px 16px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; }
+        button { width: 100%; padding: 14px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; }
         .success { display: block; background-color: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
         .error { display: block; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
@@ -24,93 +22,69 @@
 
     <div class="card">
         <h2>Registro Directo por API</h2>
-        
         <form id="authForm">
             <div class="form-group">
                 <label>Correo Electrónico</label>
                 <input type="email" id="email" required placeholder="ejemplo@correo.com">
             </div>
-            
             <div class="form-group">
                 <label>Contraseña</label>
                 <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
             </div>
-            
             <button type="submit" id="btnSubmit">Crear Cuenta</button>
         </form>
-
         <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        // Tu API Key limpia y verificada del proyecto 'mi-sistema-registro'
         const API_KEY = "AIzaSyA4qsD-4W9x9gR0SEqASQm5RiUVbf0vXPw";
-        
-        // Endpoint HTTP directo de Google Identity para saltarse bloqueos del SDK tradicional
-        const FIREBASE_API_URL = `https://googleapis.com{API_KEY}`;
+        const FIREBASE_API_URL = "https://googleapis.com" + API_KEY;
 
         const form = document.getElementById('authForm');
         const statusMessage = document.getElementById('statusMessage');
         const button = document.getElementById('btnSubmit');
 
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Bloquear interfaz para evitar peticiones duplicadas
             statusMessage.className = "msg";
             statusMessage.style.display = "none";
             button.disabled = true;
             button.textContent = "Forzando registro...";
 
-            try {
-                // Petición HTTP nativa asíncrona sin scripts intermediarios
-                const response = await fetch(FIREBASE_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password,
-                        returnSecureToken: true
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Si el servidor de Google acepta los datos
-                    statusMessage.textContent = "¡Éxito absoluto! Usuario guardado en la nube.";
-                    statusMessage.className = "msg success";
-                    form.reset();
-                } else {
-                    // Si el servidor de Google rechaza los datos por un motivo de configuración
-                    console.error("Error de la API de Google:", data.error);
-                    let errorText = "Error del servidor.";
+            fetch(FIREBASE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    returnSecureToken: true
+                })
+            })
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    button.disabled = false;
+                    button.textContent = "Crear Cuenta";
                     
-                    if (data.error.message === 'EMAIL_EXISTS') {
-                        errorText = "Este correo electrónico ya está registrado.";
-                    } else if (data.error.message === 'WEAK_PASSWORD : Password should be at least 6 characters') {
-                        errorText = "La contraseña debe tener mínimo 6 caracteres.";
-                    } else if (data.error.message === 'OPERATION_NOT_ALLOWED') {
-                        errorText = "Bloqueo: Revisa que el interruptor de Correo/Contraseña en Firebase esté encendido.";
+                    if (response.ok) {
+                        statusMessage.textContent = "¡Éxito absoluto! Usuario guardado en la nube.";
+                        statusMessage.className = "msg success";
+                        form.reset();
                     } else {
-                        errorText = `Detalle: ${data.error.message}`;
+                        statusMessage.textContent = "Error de Firebase: " + data.error.message;
+                        statusMessage.className = "msg error";
                     }
-
-                    statusMessage.textContent = errorText;
-                    statusMessage.className = "msg error";
-                }
-            } catch (err) {
-                // Error físico de red local o DNS
-                console.error("Error físico de red:", err);
-                statusMessage.textContent = "Tu red o navegador bloqueó la conexión saliente.";
-                statusMessage.className = "msg error";
-            } finally {
+                });
+            })
+            .catch(function(err) {
                 button.disabled = false;
                 button.textContent = "Crear Cuenta";
-            }
+                statusMessage.textContent = "Error físico de conexión.";
+                statusMessage.className = "msg error";
+            });
         });
     </script>
 </body>
