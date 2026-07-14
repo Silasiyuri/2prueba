@@ -42,7 +42,7 @@
                 document.getElementById('userUid').innerText = user.uid;
             } else {
                 // Si entra directo sin sesión, lo expulsa al login principal
-                window.location.href = "/2prueba/index.html"; 
+                window.location.href = "index.html"; 
             }
         });
 
@@ -50,7 +50,7 @@
             signOut(auth)
                 .then(() => {
                     alert("Sesión cerrada correctamente.");
-                    window.location.href = "/2prueba/index.html";
+                    window.location.href = "index.html";
                 })
                 .catch((error) => {
                     alert("Error al cerrar sesión.");
