@@ -7,7 +7,6 @@
 </head>
 <body>
     <h2>Crear Cuenta Nueva</h2>
-    <!-- Se eliminaron los estilos y etiquetas rotas que congelaban el formulario -->
     <form id="registerForm">
         <input type="email" id="email" placeholder="Correo Electrónico" required><br><br>
         <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br><br>
@@ -16,7 +15,7 @@
     <br>
     <p>¿Ya tienes cuenta? <a href="index.html">Inicia sesión aquí</a></p>
 
- <script type="module">
+    <script type="module">
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
 
@@ -33,30 +32,28 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Alerta inmediata para comprobar que el script sí está cargando en tu navegador
-        console.log("Firebase inicializado correctamente en la página de registro.");
-
-        document.getElementById('registerForm').addEventListener('submit', (e) => {
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Cambia el texto del botón para saber que el clic fue recibido
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Conectando con Firebase...";
+            boton.innerText = "Enviando a Firebase...";
             boton.disabled = true;
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    alert("¡ÉXITO! Usuario guardado en Firebase.");
-                    window.location.href = "perfil.html";
-                })
-                .catch((error) => {
-                    boton.innerText = "Registrarme";
-                    boton.disabled = false;
-                    alert("Firebase rechazó el registro: " + error.message);
-                });
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                alert("¡ÉXITO COMPLETO! El usuario se guardó en tu consola.");
+                // Rompe el bloqueo enviándote directo a una alerta antes de moverte de página
+                console.log("Usuario registrado:", userCredential.user);
+                window.location.href = "perfil.html";
+            } catch (error) {
+                boton.innerText = "Registrarme";
+                boton.disabled = false;
+                alert("Error de Firebase: " + error.message);
+                console.error("Detalle completo:", error);
+            }
         });
     </script>
 </body>
