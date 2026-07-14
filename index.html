@@ -32,7 +32,7 @@
     <div id="statusMessage" class="alert-box"></div>
 </div>
 
-<!-- VISTA 2: Panel de Perfil (Oculto por defecto) -->
+<!-- VISTA 2: Panel de Perfil -->
 <div class="container" id="vistaPerfil" style="display: none; text-align: center;">
     <h2>¡Bienvenido a 2NIGHT!</h2>
     <p>Has ingresado correctamente a tu panel oficial.</p>
@@ -40,27 +40,25 @@
     <button class="btn-logout" id="btnCerrarSesion">Cerrar Sesión</button>
 </div>
 
-<!-- Scripts Modulares oficiales usando ESM (Módulos de JavaScript) -->
+<!-- Scripts Modulares oficiales usando ESM -->
 <script type="module">
-    // Importamos las funciones nativas de la versión modular de Firebase
     import { initializeApp } from "https://gstatic.com";
     import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://gstatic.com";
 
-    // Tu configuración oficial exacta compartida
+    // Tu configuración oficial compartida
     const firebaseConfig = {
       apiKey: "AIzaSyCpgq6V2u0_SUry-XNcoTBd-3GzKpho2BM",
-      authDomain: "night-oficial.firebaseapp.com",
+      authDomain: "://firebaseapp.com",
       projectId: "night-oficial",
       storageBucket: "night-oficial.firebasestorage.app",
       messagingSenderId: "1058509818023",
       appId: "1:1058509818023:web:98bdad36b5685a220b3382"
     };
 
-    // Inicializar Firebase y el servicio de Autenticación
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Guardián del estado de autenticación (Cambia de vistas automáticamente)
+    // Guardián de estado de sesión
     onAuthStateChanged(auth, (user) => {
         const vistaRegistro = document.getElementById('vistaRegistro');
         const vistaPerfil = document.getElementById('vistaPerfil');
@@ -75,7 +73,7 @@
         }
     });
 
-    // Evento de Envío del Formulario de Registro
+    // Envío del Formulario
     document.getElementById('registerForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -88,21 +86,20 @@
         boton.disabled = true;
         statusBox.style.display = "none";
 
-        // Ejecutar registro en la versión modular
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 mostrarAlerta(statusBox, "¡ÉXITO! Registrado en tu panel night-oficial.", "success");
             })
             .catch((error) => {
-                console.error("Detalle completo del error:", error);
+                console.error("Detalle del error:", error);
                 let mensajeError = error.message; 
                 
                 if (error.code === 'auth/email-already-in-use') {
                     mensajeError = "Este correo ya está registrado.";
                 } else if (error.code === 'auth/weak-password') {
-                    mensajeError = "La contraseña es muy débil (mínimo 6 caracteres).";
+                    mensajeError = "La contraseña debe tener mínimo 6 caracteres.";
                 } else if (error.code === 'auth/operation-not-allowed') {
-                    mensajeError = "Activa el proveedor 'Correo electrónico/Contraseña' en la pestaña Sign-in method de Firebase.";
+                    mensajeError = "Activa el proveedor 'Correo electrónico/Contraseña' en Firebase.";
                 }
 
                 mostrarAlerta(statusBox, mensajeError, "error");
@@ -111,11 +108,9 @@
             });
     });
 
-    // Evento para Cerrar Sesión de forma segura
+    // Cerrar Sesión
     document.getElementById('btnCerrarSesion').addEventListener('click', function() {
-        signOut(auth).catch((error) => {
-            console.error("Error al cerrar sesión:", error);
-        });
+        signOut(auth).catch((error) => console.error(error));
     });
 
     function mostrarAlerta(elemento, mensaje, clase) {
