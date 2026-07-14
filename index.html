@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Oficial 2NIGHT</title>
-    <!-- SDK oficial de Firebase para evitar bloqueos del navegador -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <title>Registro 2NIGHT</title>
 </head>
 <body>
     <h2>Crear Cuenta Nueva (2NIGHT)</h2>
@@ -16,39 +13,43 @@
         <button type="submit" id="btnRegistrar">Registrarme</button>
     </form>
     
-    <script>
-        // CONFIGURACIÓN CORREGIDA: Combina el ID real heredado de tu cuenta de servicio con el nuevo subdominio
+    <script type="module">
+        // IMPORTANTE: Se usan los módulos oficiales v10 exigidos por Identity Platform
+        import { initializeApp } from "https://gstatic.com";
+        import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
+
+        // Configuración real obtenida de tu cuenta de servicio vinculada
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com", 
-          projectId: "night-f23fa" 
+          authDomain: "://firebaseapp.com",
+          projectId: "night-f23fa"
         };
 
-        // Inicializar de forma segura
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Conectando con 2NIGHT...";
+            boton.innerText = "Registrando en 2NIGHT...";
             boton.disabled = true;
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Petición directa a través del canal oficial del SDK
-            firebase.auth().createUserWithEmailAndPassword(email, password)
+            // Llamada modular obligatoria
+            createUserWithEmailAndPassword(auth, email, password)
                 .then(function(userCredential) {
-                    alert("¡ÉXITO TOTAL! Tu usuario se ha registrado en tu consola 2NIGHT.");
+                    alert("¡ÉXITO! El usuario se ha guardado en tu panel de 2NIGHT.");
                     window.location.href = "perfil.html";
                 })
                 .catch(function(error) {
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
-                    alert("Firebase respondió: " + error.message);
+                    // Alerta que nos dirá si falta activar algún permiso en la consola
+                    alert("Respuesta del servidor: " + error.message);
                 });
         });
     </script>
