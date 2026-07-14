@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Usuarios</title>
+    <title>Prueba de Registro Directo</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-        body { background-color: #121214; color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { background-color: #121214; color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .card { background-color: #202024; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; border: 1px solid #29292e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2 { font-size: 20px; margin-bottom: 20px; color: #00cfec; text-align: center; }
         .form-group { margin-bottom: 18px; }
@@ -15,31 +15,85 @@
         .form-group input:focus { border-color: #00cfec; }
         button { width: 100%; padding: 14px; background-color: #00cfec; color: #121214; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #0099bc; }
+        #panel-reporte { width: 100%; max-width: 380px; margin-top: 15px; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; display: none; text-align: left; line-height: 1.4; border: 1px solid; }
     </style>
+
+    <!-- CARGA DIRECTA DEL MOTOR DE FIREBASE -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 </head>
 <body>
 
     <div class="card">
-        <h2>Crear Cuenta</h2>
-        
-        
-        
-            
-            <!-- Parámetros obligatorios de red inyectados en la petición -->
-            <input type="hidden" name="key" value="AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0">
-            <input type="hidden" name="returnSecureToken" value="true">
-
+        <h2>Crear Cuenta de Prueba</h2>
+        <form id="registro-form">
             <div class="form-group">
                 <label>Correo Electrónico</label>
-                <input type="text" name="email" required placeholder="nombre@correo.com">
+                <input type="email" id="email" required placeholder="nombre@correo.com">
             </div>
             <div class="form-group">
                 <label>Contraseña</label>
-                <input type="text" name="password" required placeholder="Mínimo 6 caracteres">
+                <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
             </div>
-            <button type="submit">Registrarse en Firebase</button>
+            <button type="submit">Enviar Registro</button>
         </form>
     </div>
 
+    <!-- PANEL VISUAL QUE TE DICE EXACTAMENTE QUÉ PASA -->
+    <div id="panel-reporte"></div>
+
+    <script>
+        const reporte = document.getElementById('panel-reporte');
+
+        // Tu configuración exacta para la prueba
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0",
+            authDomain: "://firebaseapp.com",
+            projectId: "night-sistema"
+        };
+
+        // Inicializamos Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        document.getElementById('registro-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            reporte.style.display = "block";
+            reporte.style.backgroundColor = "rgba(255, 204, 0, 0.1)";
+            reporte.style.borderColor = "#ffcc00";
+            reporte.style.color = "#ffcc00";
+            reporte.innerText = "⏳ Conectando con Google Identity Toolkit...";
+
+            // Intentamos guardar al usuario en la nube
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // ÉXITO
+                    reporte.style.backgroundColor = "rgba(0, 255, 102, 0.1)";
+                    reporte.style.borderColor = "#00ff66";
+                    reporte.style.color = "#00ff66";
+                    reporte.innerHTML = `🎉 <b>¡REGISTRO EXITOSO!</b><br>Usuario guardado en Firebase.<br>UID: ${userCredential.user.uid}`;
+                    document.getElementById('registro-form').reset();
+                })
+                .catch((error) => {
+                    // FALLO INFORME DETALLADO
+                    reporte.style.backgroundColor = "rgba(255, 51, 51, 0.1)";
+                    reporte.style.borderColor = "#ff3333";
+                    reporte.style.color = "#ff3333";
+                    
+                    if (error.code === 'auth/operation-not-allowed') {
+                        reporte.innerHTML = `❌ <b>ERROR DE FIREBASE (Código: ${error.code})</b><br><br><b>Motivo:</b> Google rechazó el envío porque el método 'Correo/Contraseña' está desactivado en tu proyecto.<br><br>👉 <b>SOLUCIÓN:</b> Ve a tu consola de Firebase > sección Authentication > pestaña Sign-in Method > activa el interruptor de Correo electrónico/Contraseña y dale a Guardar.`;
+                    } else if (error.code === 'auth/email-already-in-use') {
+                        reporte.innerHTML = `❌ <b>ERROR:</b> Este correo ya está registrado en tu proyecto. Prueba con otro diferente.`;
+                    } else if (error.code === 'auth/weak-password') {
+                        reporte.innerHTML = `❌ <b>ERROR:</b> La contraseña es muy corta. Debe tener al menos 6 caracteres.`;
+                    } else {
+                        reporte.innerHTML = `❌ <b>FALLO DE RESPUESTA:</b><br>${error.message}`;
+                    }
+                });
+        });
+    </script>
 </body>
 </html>
