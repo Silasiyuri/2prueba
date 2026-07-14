@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Cuenta</title>
-    <!-- Librerías estables de Firebase -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <title>Registro 2NIGHT</title>
 </head>
 <body>
-    <h2>Crear Cuenta Nueva</h2>
+    <h2>Crear Cuenta Nueva (2NIGHT)</h2>
     <form id="registerForm">
         <input type="email" id="email" placeholder="Correo Electrónico" required><br><br>
         <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br><br>
@@ -17,41 +14,50 @@
     </form>
     
     <script>
-        const firebaseConfig = {
-          apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com",
-          projectId: "night-f23fa",
-          storageBucket: "night-f23fa.firebasestorage.app",
-          messagingSenderId: "386862893155",
-          appId: "1:386862893155:web:a42673375ea87209389056",
-          measurementId: "G-ZSF58H9VE4"
-        };
-
-        // Inicializar Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Registrando en la nube...";
+            boton.innerText = "Registrando en 2NIGHT...";
             boton.disabled = true;
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(function(userCredential) {
-                    alert("¡ÉXITO TOTAL! Usuario guardado en Firebase.");
-                    window.location.href = "perfil.html";
+            // Clave de API e endpoint ajustados específicamente para el nuevo servidor de 2NIGHT
+            const apiKey = "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc";
+            const url = "https://googleapis.com" + apiKey;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    email: email, 
+                    password: password, 
+                    returnSecureToken: true 
                 })
-                .catch(function(error) {
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.error) {
+                    // Mensaje de diagnóstico directo del nuevo proyecto
+                    alert("Firebase 2NIGHT respondió: " + data.error.message);
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
-                    alert("Respuesta de Firebase: " + error.message);
-                });
+                } else {
+                    alert("¡ÉXITO TOTAL! El usuario se ha guardado en el proyecto 2NIGHT.");
+                    window.location.href = "perfil.html";
+                }
+            })
+            .catch(function(error) {
+                alert("Error técnico de red: " + error.message);
+                boton.innerText = "Registrarme";
+                boton.disabled = false;
+            });
         });
     </script>
 </body>
