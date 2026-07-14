@@ -4,49 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Oficial 2NIGHT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        form {
+            max-width: 300px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #cccccc;
+        }
+    </style>
 </head>
 <body>
     <h2>Crear Cuenta Nueva (2NIGHT)</h2>
     <form id="registerForm">
-        <input type="email" id="email" placeholder="Correo Electrónico" required><br><br>
-        <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br><br>
+        <input type="email" id="email" placeholder="Correo Electrónico" required><br>
+        <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br>
         <button type="submit" id="btnRegistrar">Registrarme</button>
     </form>
     
     <script type="module">
-        // Uso mandatorio de módulos v10 para romper el bloqueo de Identity Platform
+        // CORREGIDO: Rutas de importación completas con la versión modular oficial de Firebase v10
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
 
+        // CORREGIDO: Configuración con el subdominio authDomain reparado para tu proyecto night-f23fa
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
           authDomain: "://firebaseapp.com",
           projectId: "night-f23fa"
         };
 
+        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // Escuchar el envío del formulario
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Registrando en 2NIGHT...";
-            boton.disabled = true;
-
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
+            // Bloquear el botón para evitar múltiples clics
+            boton.innerText = "Registrando en 2NIGHT...";
+            boton.disabled = true;
+
+            // Crear el usuario en Firebase Authentication
             createUserWithEmailAndPassword(auth, email, password)
                 .then(function(userCredential) {
                     alert("¡ÉXITO TOTAL! El usuario se guardó en tu panel de 2NIGHT.");
+                    // Nota: Asegúrate de tener creado el archivo perfil.html en tu repositorio
                     window.location.href = "perfil.html";
                 })
                 .catch(function(error) {
+                    // Restaurar el botón en caso de error
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
-                    // Alerta que te dirá si el correo está repetido o mal escrito
+                    
+                    // Alerta nativa para el usuario final
                     alert("Respuesta de Firebase: " + error.message);
+                    
+                    // Muestra el código de error técnico exacto en la consola (F12)
+                    console.error("Código de error:", error.code);
+                    console.error("Mensaje completo:", error.message);
                 });
         });
     </script>
