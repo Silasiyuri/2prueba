@@ -3,61 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil Privado</title>
-    <!-- SOLUCIÓN CRÍTICA: Evita errores 404 al verificar la sesión -->
-    <base href="/2prueba/">
+    <title>Perfil 2NIGHT</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; justify-content: center; }
+        .container { max-width: 400px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        h2 { color: #111; margin-bottom: 10px; }
+        p { color: #555; font-size: 16px; margin-bottom: 20px; }
+        .user-email { font-weight: bold; color: #007bff; }
+        .btn-logout { width: 100%; padding: 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .btn-logout:hover { background-color: #c82333; }
+        /* Pantalla de carga mientras verifica Firebase */
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f9; display: flex; justify-content: center; align-items: center; z-index: 1000; font-size: 18px; font-weight: bold; color: #333; }
+    </style>
 </head>
 <body>
-    <h2>Panel de Usuario</h2>
-    <div id="loading">Cargando datos del usuario...</div>
+
+<!-- Pantalla de carga de seguridad -->
+<div id="loading" class="loading-overlay">Verificando sesión segura...</div>
+
+<div class="container">
+    <h2>¡Bienvenido a 2NIGHT!</h2>
+    <p>Has ingresado correctamente a tu panel oficial.</p>
+    <p>Tu usuario es: <span id="userEmail" class="user-email">Cargando...</span></p>
     
-    <div id="content" style="display: none;">
-        <p>¡Hola! Has ingresado correctamente a la zona privada.</p>
-        <p><strong>Tu correo:</strong> <span id="userEmail"></span></p>
-        <p><strong>Tu ID único (UID):</strong> <span id="userUid"></span></p>
-        <button id="logoutBtn">Cerrar Sesión</button>
-    </div>
+    <button class="btn-logout" id="btnCerrarSesion">Cerrar Sesión</button>
+</div>
 
+<!-- Scripts Oficiales de Firebase (Versión de compatibilidad v8) -->
+<script src="https://gstatic.com"></script>
+<script src="https://gstatic.com"></script>
 
- <script type="module">
-        import { initializeApp } from "https://gstatic.com";
-        import { getAuth, onAuthStateChanged, signOut } from "https://gstatic.com";
+<script>
+    // Configuración exacta de tu proyecto Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCpgq6V2u0_SUry-XNcoTBd-3GzKpho2BM",
+      authDomain: "://firebaseapp.com",
+      projectId: "night-oficial",
+      storageBucket: "night-oficial.firebasestorage.app",
+      messagingSenderId: "1058509818023",
+      appId: "1:1058509818023:web:98bdad36b5685a220b3382"
+    };
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "night-f23fa.firebaseapp.com", 
-          projectId: "night-f23fa",
-          storageBucket: "night-f23fa.firebasestorage.app",
-          messagingSenderId: "386862893155",
-          appId: "1:386862893155:web:a42673375ea87209389056",
-          measurementId: "G-ZSF58H9VE4"
-        };
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+    // Guardián de Seguridad: Monitorea el estado del usuario en tiempo real
+    auth.onAuthStateChanged(function(user) {
+        const loadingScreen = document.getElementById('loading');
+        
+        if (user) {
+            // El usuario es válido y está autenticado
+            document.getElementById('userEmail').innerText = user.email;
+            loadingScreen.style.display = 'none'; // Quitar pantalla de carga
+        } else {
+            // Intento de acceso ilegal o no autenticado: Expulsar al index
+            window.location.href = "index.html"; // Cambia "index.html" si tu formulario de registro tiene otro nombre
+        }
+    });
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                
-                document.getElementById('userEmail').innerText = user.email;
-                document.getElementById('userUid').innerText = user.uid;
-            } else {
-                window.location.href = "index.html"; 
-            }
+    // Lógica para Cerrar Sesión de forma segura
+    document.getElementById('btnCerrarSesion').addEventListener('click', function() {
+        auth.signOut().then(function() {
+            // Firebase limpia los tokens del navegador automáticamente al salir
+            window.location.href = "index.html";
+        }).catch(function(error) {
+            alert("Error al cerrar sesión. Inténtalo de nuevo.");
+            console.error(error);
         });
+    });
+</script>
 
-     document.getElementById('logoutBtn').addEventListener('click', () => {
-            signOut(auth)
-                .then(() => {
-                    alert("Sesión cerrada correctamente.");
-                    window.location.href = "index.html";
-                })
-                .catch((error) => {
-                    alert("Error al cerrar sesión.");
-                });
-        });
-    </script>
 </body>
 </html>
