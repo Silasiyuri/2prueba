@@ -24,8 +24,10 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Clave de API e endpoint ajustados específicamente para el nuevo servidor de 2NIGHT
+            // Clave de API de tu proyecto integrada
             const apiKey = "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc";
+            
+            // Endpoint nativo con https:// para evitar bloqueos en celulares
             const url = "https://googleapis.com" + apiKey;
 
             fetch(url, {
@@ -44,17 +46,19 @@
             })
             .then(function(data) {
                 if (data.error) {
-                    // Mensaje de diagnóstico directo del nuevo proyecto
-                    alert("Firebase 2NIGHT respondió: " + data.error.message);
+                    // Si el correo ya existe o la contraseña es muy corta, Firebase avisará aquí
+                    alert("Firebase 2NIGHT denegó el registro: " + data.error.message);
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
                 } else {
-                    alert("¡ÉXITO TOTAL! El usuario se ha guardado en el proyecto 2NIGHT.");
+                    alert("¡ÉXITO TOTAL! Tu usuario se guardó en el nuevo proyecto 2NIGHT.");
+                    // Guarda el token en el navegador para mantener la sesión abierta
+                    localStorage.setItem('userToken', data.idToken);
                     window.location.href = "perfil.html";
                 }
             })
             .catch(function(error) {
-                alert("Error técnico de red: " + error.message);
+                alert("Error de conexión con el servidor.");
                 boton.innerText = "Registrarme";
                 boton.disabled = false;
             });
