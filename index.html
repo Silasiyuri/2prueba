@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo Sistema de Registro - Firebase</title>
+    <title>Nuevo Sistema de Registro - Conexión Directa</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -19,15 +19,11 @@
         .success { display: block; background-color: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
         .error { display: block; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
-
-    <!-- Cargamos las librerías tradicionales de Firebase (Compat/v8) que no fallan en servidores estáticos -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
 </head>
 <body>
 
     <div class="card">
-        <h2>Registro desde Cero</h2>
+        <h2>Registro Directo por API</h2>
         
         <form id="authForm">
             <div class="form-group">
@@ -47,68 +43,74 @@
     </div>
 
     <script>
-        // Tus credenciales del proyecto 'mi-sistema-registro' incorporadas directamente
-        var firebaseConfig = {
-          apiKey: "AIzaSyA4qsD-4W9x9gR0SEqASQm5RiUVbf0vXPw",
-          authDomain: "://firebaseapp.com",
-          projectId: "mi-sistema-registro",
-          storageBucket: "mi-sistema-registro.firebasestorage.app",
-          messagingSenderId: "109741039736",
-          appId: "1:109741039736:web:d3f35f3b2700e797bccd8d"
-        };
+        // Tu API Key limpia y verificada del proyecto 'mi-sistema-registro'
+        const API_KEY = "AIzaSyA4qsD-4W9x9gR0SEqASQm5RiUVbf0vXPw";
+        
+        // Endpoint HTTP directo de Google Identity para saltarse bloqueos del SDK tradicional
+        const FIREBASE_API_URL = `https://googleapis.com{API_KEY}`;
 
-        // Inicializar Firebase de forma global clásica
-        firebase.initializeApp(firebaseConfig);
+        const form = document.getElementById('authForm');
+        const statusMessage = document.getElementById('statusMessage');
+        const button = document.getElementById('btnSubmit');
 
-        var form = document.getElementById('authForm');
-        var statusMessage = document.getElementById('statusMessage');
-        var button = document.getElementById('btnSubmit');
-
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            var email = document.getElementById('email').value;
-            var password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-            // Limpiar estados visuales e inactivar botón momentáneamente
+            // Bloquear interfaz para evitar peticiones duplicadas
             statusMessage.className = "msg";
             statusMessage.style.display = "none";
             button.disabled = true;
-            button.textContent = "Procesando...";
+            button.textContent = "Forzando registro...";
 
-            // Llamada directa al servicio de autenticación
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(function(userCredential) {
-                    var user = userCredential.user;
-                    statusMessage.textContent = "¡Excelente! Cuenta creada en la nube de Firebase.";
+            try {
+                // Petición HTTP nativa asíncrona sin scripts intermediarios
+                const response = await fetch(FIREBASE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        returnSecureToken: true
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Si el servidor de Google acepta los datos
+                    statusMessage.textContent = "¡Éxito absoluto! Usuario guardado en la nube.";
                     statusMessage.className = "msg success";
                     form.reset();
-                    button.disabled = false;
-                    button.textContent = "Crear Cuenta";
-                })
-                .catch(function(error) {
-                    console.error("Error completo enviado por Google:", error);
-                    var userFriendlyText = "Ocurrió un problema inesperado.";
-
-                    if (error.code === 'auth/email-already-in-use') {
-                        userFriendlyText = "Este correo ya está registrado en tu proyecto.";
-                    } else if (error.code === 'auth/weak-password') {
-                        userFriendlyText = "La contraseña requiere un mínimo de 6 caracteres.";
-                    } else if (error.code === 'auth/invalid-email') {
-                        userFriendlyText = "El formato de correo no es válido.";
-                    } else if (error.code === 'auth/operation-not-allowed') {
-                        userFriendlyText = "Error: Falta habilitar 'Correo/contraseña' en la pestaña Sign-in Method dentro de Firebase.";
-                    } else if (error.code === 'auth/unauthorized-domain') {
-                        userFriendlyText = "Error: Debes agregar tu enlace de GitHub en la sección 'Dominios autorizados' de Firebase.";
+                } else {
+                    // Si el servidor de Google rechaza los datos por un motivo de configuración
+                    console.error("Error de la API de Google:", data.error);
+                    let errorText = "Error del servidor.";
+                    
+                    if (data.error.message === 'EMAIL_EXISTS') {
+                        errorText = "Este correo electrónico ya está registrado.";
+                    } else if (data.error.message === 'WEAK_PASSWORD : Password should be at least 6 characters') {
+                        errorText = "La contraseña debe tener mínimo 6 caracteres.";
+                    } else if (data.error.message === 'OPERATION_NOT_ALLOWED') {
+                        errorText = "Bloqueo: Revisa que el interruptor de Correo/Contraseña en Firebase esté encendido.";
                     } else {
-                        userFriendlyText = "Error del servidor: " + error.message;
+                        errorText = `Detalle: ${data.error.message}`;
                     }
 
-                    statusMessage.textContent = userFriendlyText;
+                    statusMessage.textContent = errorText;
                     statusMessage.className = "msg error";
-                    button.disabled = false;
-                    button.textContent = "Crear Cuenta";
-                });
+                }
+            } catch (err) {
+                // Error físico de red local o DNS
+                console.error("Error físico de red:", err);
+                statusMessage.textContent = "Tu red o navegador bloqueó la conexión saliente.";
+                statusMessage.className = "msg error";
+            } finally {
+                button.disabled = false;
+                button.textContent = "Crear Cuenta";
+            }
         });
     </script>
 </body>
