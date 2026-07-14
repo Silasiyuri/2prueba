@@ -4,26 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrarse</title>
-    <!-- SOLUCIÓN CRÍTICA: Mantiene las peticiones dentro de tu repositorio -->
-    <base href="/2prueba/">
 </head>
 <body>
     <h2>Crear Cuenta Nueva</h2>
+    <!-- Se eliminaron los estilos y etiquetas rotas que congelaban el formulario -->
     <form id="registerForm">
         <input type="email" id="email" placeholder="Correo Electrónico" required><br><br>
         <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br><br>
-        <button type="submit">Registrarme</button>
+        <button type="submit" id="btnRegistrar">Registrarme</button>
     </form>
     <br>
     <p>¿Ya tienes cuenta? <a href="index.html">Inicia sesión aquí</a></p>
 
-<script type="module">
+    <script type="module">
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "night-f23fa.firebaseapp.com",
+          authDomain: "://firebaseapp.com",
           projectId: "night-f23fa",
           storageBucket: "night-f23fa.firebasestorage.app",
           messagingSenderId: "386862893155",
@@ -34,18 +33,29 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // Alerta inmediata para comprobar que el script sí está cargando en tu navegador
+        console.log("Firebase inicializado correctamente en la página de registro.");
+
         document.getElementById('registerForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            // Cambia el texto del botón para saber que el clic fue recibido
+            const boton = document.getElementById('btnRegistrar');
+            boton.innerText = "Conectando con Firebase...";
+            boton.disabled = true;
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    alert("¡Cuenta creada con éxito!");
+                    alert("¡ÉXITO! Usuario guardado en Firebase.");
                     window.location.href = "perfil.html";
                 })
                 .catch((error) => {
-                    alert("Error al registrar: " + error.message);
+                    boton.innerText = "Registrarme";
+                    boton.disabled = false;
+                    alert("Firebase rechazó el registro: " + error.message);
                 });
         });
     </script>
