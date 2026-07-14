@@ -1,181 +1,60 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basilico Pizzéria | Kosár Tartalma</title>
-    <style>
-        /* 🎨 FONDO VERDE BASE */
-        body { margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #2E7D32; color: #ffffff; }
-        .navbar { background-color: #1B5E20; display: flex !important; justify-content: space-between !important; align-items: center !important; padding: 15px 20px; box-sizing: border-box; width: 100%; }
-        .logo { margin-right: auto !important; padding: 0; }
-        .logo a { color: white; text-decoration: none; font-weight: bold; font-size: 24px; white-space: nowrap; }
-        .nav-menu { list-style: none; margin: 0; padding: 0; display: flex !important; align-items: center !important; }
-        .nav-menu li a { display: block; color: white; padding: 10px 15px; text-decoration: none; font-weight: bold; white-space: nowrap; }
-        
-        /* 📦 PANEL BLANCO CENTRAL */
-        .kosar-section { background-color: #ffffff; color: #333333; padding: 50px 20px; min-height: 65vh; text-align: center; }
-        .kosar-box { max-width: 600px; margin: 0 auto; background: #f9f9f9; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: left; border: 1px solid #ddd; }
-        .kosar-box h2 { color: #1B5E20; margin-top: 0; text-align: center; border-bottom: 2px solid #2E7D32; padding-bottom: 10px; }
-        
-        /* 🛒 LISTA DE PRODUCTOS */
-        .kosar-lista { list-style: none; padding: 0; margin: 15px 0; font-size: 16px; color: #333; }
-        .kosar-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #ccc; align-items: center; }
-        .btn-torol { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
-        /* 📋 FORMULARIO DE ENVÍO RECONFIGURADO A ENLACE */
-        .campo { margin-bottom: 18px; }
-        label { display: block; font-weight: bold; margin-bottom: 6px; color: #1B5E20; }
-        input, textarea { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
-        textarea[readonly] { background-color: #eaeded; color: #555; cursor: not-allowed; }
-        
-        /* Botón de envío transformado en enlace seguro para Safari */
-        .btn-submit-safari { 
-            display: block !important; width: 100%; padding: 14px 0; 
-            background: #ff9800; color: white !important; 
-            text-align: center; font-size: 18px; font-weight: bold; 
-            border-radius: 30px; text-decoration: none !important;
-            cursor: pointer; margin-top: 15px; box-sizing: border-box;
-        }
-        .btn-submit-safari:hover { background: #e68a00; }
-    </style>
+    <title>Registrarse</title>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo"><a href="index.html">Basilico Pizzéria</a></div>
-        <ul class="nav-menu">
-            <li><a href="Főoldal.html">Főoldal</a></li>
-            <li><a href="pizzák.html">Pizzák</a></li>
-        </ul>
-    </nav>
-    <!-- 🛒 PANEL PRINCIPAL DEL CARRITO DE COMPRAS CONECTADO CON LA COCINA -->
-    <section class="kosar-section">
-        <div class="kosar-box">
-            <h2>🛒 Kosár Tartalma</h2>
-            
-            <!-- Aquí se inyectan las pizzas seleccionadas -->
-            <ul id="lista-kosar" class="kosar-lista"></ul>
-            
-            <hr style="border: 0; border-top: 1px solid #ddd; margin: 25px 0;">
-            
-            <h2>🍕 Rendelés Leadása</h2>
-            <div class="campo">
-                <label>Vásárló Neve (Nombre):</label>
-                <input type="text" id="nombre" oninput="prepararEnlaceHashtag()" placeholder="Írd be a neved" required>
-            </div>
-            <div class="campo">
-                <label>Szállítási Cím (Dirección):</label>
-                <input type="text" id="direccion" oninput="prepararEnlaceHashtag()" placeholder="Írd be a címed" required>
-            </div>
-            <div class="campo">
-                <label>Rendelés részletei (Detalles automáticos):</label>
-                <textarea id="detalle" rows="4" readonly></textarea>
-            </div>
-            
-            <!-- 🌟 CAMBIO MÁGICO: Usamos un elemento de enlace <a> estructurado con '#' que Safari local sí acepta transferir -->
-            <a href="panel.html" id="btnEnviarCocina" class="btn-submit-safari" onclick="return procesarYValidarPedido()">Rendelés elküldése a konyhára</a>
-        </div>
-    </section>
+    <h2>Crear Cuenta Nueva</h2>
+    <form id="registerForm">
+        <input type="email" id="email" placeholder="Correo Electrónico" required><br><br>
+        <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br><br>
+        <button type="submit">Registrarme</button>
+    </form>
+    <br>
+    <p>¿Ya tienes cuenta? <a href="index.html">Inicia sesión aquí</a></p>
 
-    <!-- 👣 PIE DE PÁGINA ACTUALIZADO CON TUS DATOS REALES -->
-    <footer style="background-color: #114014; padding: 40px 20px; text-align: center; font-size: 15px; color: white; width: 100%; box-sizing: border-box;">
-        <div style="max-width: 1100px; margin: 0 auto; width: 100%;">
-            <div style="display: flex !important; flex-direction: row !important; justify-content: space-around !important; flex-wrap: wrap !important; gap: 30px !important; margin-bottom: 30px; text-align: center;">
-                <div style="min-width: 250px; flex: 1;">
-                    <h4 style="color: #A5D6A7; margin: 0 0 10px 0; font-size: 18px; font-weight: bold;">📍 Címünk</h4>
-                    <p style="margin: 0; line-height: 1.5; font-size: 15px;">Budapest, Kőfaragó u. 15, 1085</p>
-                </div>
-                <div style="min-width: 250px; flex: 1;">
-                    <h4 style="color: #A5D6A7; margin: 0 0 10px 0; font-size: 18px; font-weight: bold;">📞 Telefon</h4>
-                    <p style="margin: 0; line-height: 1.5; font-size: 15px;">(06 1) 781 0538</p>
-                </div>
-                <div style="min-width: 250px; flex: 1;">
-                    <h4 style="color: #A5D6A7; margin: 0 0 10px 0; font-size: 18px; font-weight: bold;">🕒 Nyitvatartás</h4>
-                    <p style="margin: 0; line-height: 1.5; font-size: 15px;">Hétfő - Szombat: 12:00 - 21:00</p>
-                </div>
-            </div>
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 14px; opacity: 0.9;">
-                <p style="margin: 5px 0;">&copy; 2026 Basilico Pizzéria. Minden jog fenntartva.</p>
-            </div>
-        </div>
-    </footer>
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+        import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
 
-    <!-- 🧠 SCRIPT INTERACTIVO ANTI-BLOQUEO DE APPLE -->
-    <script>
-        function renderizarCarrito() {
-            let car = JSON.parse(localStorage.getItem('pizzeria_cart')) || [];
-            const contenedorUl = document.getElementById('lista-kosar');
-            const cuadroFormulario = document.getElementById('detalle');
-            
-            if (car.length === 0) {
-                contenedorUl.innerHTML = '<li style="text-align:center; color:#666; padding: 15px 0;">A kosár jelenleg üres.</li>';
-                cuadroFormulario.value = '';
-                return;
-            }
-            
-            contenedorUl.innerHTML = '';
-            car.forEach((pizza, i) => {
-                contenedorUl.innerHTML += `
-                    <li class="kosar-item">
-                        <span>🍕 1x ${pizza}</span>
-                        <button type="button" class="btn-torol" onclick="eliminarDelCarrito(${i})">Törlés</button>
-                    </li>`;
-            });
-            
-            cuadroFormulario.value = car.map(p => "1x " + p).join(", ");
-            prepararEnlaceHashtag(); // Empaqueta los productos iniciales
-        }
+        const firebaseConfig = {
+          apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
+          authDomain: "://firebaseapp.com",
+          projectId: "night-f23fa",
+          storageBucket: "night-f23fa.firebasestorage.app",
+          messagingSenderId: "386862893155",
+          appId: "1:386862893155:web:a42673375ea87209389056",
+          measurementId: "G-ZSF58H9VE4"
+        };
 
-        function eliminarDelCarrito(i) {
-            let car = JSON.parse(localStorage.getItem('pizzeria_cart')) || [];
-            car.splice(i, 1);
-            localStorage.setItem('pizzeria_cart', JSON.stringify(car));
-            renderizarCarrito();
-        }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        // 🌟 PACK DE COMPRESIÓN HASHTAG: Reúne los datos y los amarra detrás de la URL usando el '#'
-        function ajustarRutaEnlaceCocina() {
-            const cliente = document.getElementById('nombre').value;
-            const dir = document.getElementById('direccion').value;
-            const platos = document.getElementById('detalle').value;
-            const boton = document.getElementById('btnEnviarCocina');
-            
-            // Revisa cómo se llama tu archivo de cocina separado. Si se llama diferente a 'panel.html', cambia el nombre aquí abajo:
-            if(boton) {
-                boton.href = `panel.html#${encodeURIComponent(cliente)}|${encodeURIComponent(dir)}|${encodeURIComponent(platos)}`;
-            }
-        }
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        function prepararEnlaceHashtag() {
-            ajustarRutaEnlaceCocina();
-        }
-
-        function procesarYValidarPedido() {
-            const cliente = document.getElementById('nombre').value.trim();
-            const dir = document.getElementById('direccion').value.trim();
-            let car = JSON.parse(localStorage.getItem('pizzeria_cart')) || [];
-
-            if (car.length === 0) {
-                alert('Hiba: A kosár üres!');
-                return false;
-            }
-            if (cliente === "" || dir === "") {
-                alert('Hiba: Kérjük, töltsd ki a neved és a címed!');
-                return false;
-            }
-
-            // Forzamos la última actualización de la ruta por seguridad
-            ajustarRutaEnlaceCocina();
-
-            alert('A rendelést sikeresen elküldtük a konyhára! Séfjeink már készítik. \n\n(¡Pedido enviado con éxito a la cocina!)');
-            
-            // Vaciamos el carrito temporal antes de saltar a la pantalla de la cocina
-            localStorage.removeItem('pizzeria_cart');
-            return true; // Habilita a Safari a efectuar el salto físico de página
-        }
-
-        // Carga automática inicial
-        window.addEventListener('DOMContentLoaded', renderizarCarrito);
+            // Crear usuario en Firebase
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("¡Cuenta creada con éxito! Redirigiendo a tu perfil...");
+                    window.location.href = "perfil.html";
+                })
+                .catch((error) => {
+                    let mensajeError = "Error al registrar usuario.";
+                    if (error.code === 'auth/email-already-in-use') {
+                        mensajeError = "Este correo electrónico ya está registrado.";
+                    } else if (error.code === 'auth/weak-password') {
+                        mensajeError = "La contraseña debe tener al menos 6 caracteres.";
+                    } else if (error.code === 'auth/invalid-email') {
+                        mensajeError = "El formato del correo electrónico no es válido.";
+                    }
+                    alert(mensajeError);
+                    console.error("Detalle:", error.message);
+                });
+        });
     </script>
 </body>
 </html>
