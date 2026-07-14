@@ -4,25 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Perfil Privado</title>
+    <!-- SOLUCIÓN CRÍTICA: Evita errores 404 al verificar la sesión -->
+    <base href="/2prueba/">
 </head>
 <body>
- <h2>Panel de Usuario</h2>
+    <h2>Panel de Usuario</h2>
     <div id="loading">Cargando datos del usuario...</div>
     
- <div id="content" style="display: none;">
+    <div id="content" style="display: none;">
         <p>¡Hola! Has ingresado correctamente a la zona privada.</p>
         <p><strong>Tu correo:</strong> <span id="userEmail"></span></p>
         <p><strong>Tu ID único (UID):</strong> <span id="userUid"></span></p>
         <button id="logoutBtn">Cerrar Sesión</button>
     </div>
 
- <script type="module">
+    <script type="module">
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, onAuthStateChanged, signOut } from "https://gstatic.com";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com", 
+          authDomain: "night-f23fa.firebaseapp.com", 
           projectId: "night-f23fa",
           storageBucket: "night-f23fa.firebasestorage.app",
           messagingSenderId: "386862893155",
@@ -41,7 +43,6 @@
                 document.getElementById('userEmail').innerText = user.email;
                 document.getElementById('userUid').innerText = user.uid;
             } else {
-                // Si entra directo sin sesión, lo expulsa al login principal
                 window.location.href = "index.html"; 
             }
         });
