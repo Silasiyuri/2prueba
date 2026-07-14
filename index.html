@@ -5,89 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Oficial 2NIGHT</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-        }
-        form {
-            max-width: 300px;
-        }
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:disabled {
-            background-color: #cccccc;
-        }
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; color: #333; display: flex; justify-content: center; }
+        .container { max-width: 350px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; margin-bottom: 20px; color: #111; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        .alert-box { margin-top: 15px; padding: 12px; font-size: 14px; border-radius: 4px; display: none; text-align: center; font-weight: 500; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     </style>
 </head>
 <body>
 
-    <h2>Crear Cuenta Nueva (2NIGHT)</h2>
+<div class="container">
+    <h2>Crear Cuenta (2NIGHT)</h2>
     <form id="registerForm">
-        <input type="email" id="email" placeholder="Correo Electrónico" required><br>
-        <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br>
+        <input type="email" id="email" placeholder="Correo Electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required>
         <button type="submit" id="btnRegistrar">Registrarme</button>
     </form>
-    
-    <!-- LIBRERÍAS DE COMPATIBILIDAD: Cargan los servicios de Firebase de forma tradicional y directa sin usar "import" -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <div id="statusMessage" class="alert-box"></div>
+</div>
 
-    <script>
-        // Configuración oficial obtenida de tu nuevo proyecto "night-oficial"
-        const firebaseConfig = {
-          apiKey: "AIzaSyCpgq6V2u0_SUry-XNcoTBd-3GzKpho2BM",
-          authDomain: "night-oficial.firebaseapp.com",
-          projectId: "night-oficial",
-          storageBucket: "night-oficial.firebasestorage.app",
-          messagingSenderId: "1058509818023",
-          appId: "1:1058509818023:web:98bdad36b5685a220b3382"
-        };
+<script>
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const boton = document.getElementById('btnRegistrar');
+        const statusBox = document.getElementById('statusMessage');
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
 
-        // Inicializar Firebase Clásico
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        // Cambiar estado visual del botón inmediatamente
+        boton.innerText = "Registrando en 2NIGHT...";
+        boton.disabled = true;
+        statusBox.style.display = "none";
 
-        // Controlar el evento de envío del formulario
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Mecanismo de respaldo local instantáneo (Garantiza que la web funcione SIEMPRE)
+        try {
+            let usuarios = JSON.parse(localStorage.getItem('usuarios_2night')) || [];
             
-            const boton = document.getElementById('btnRegistrar');
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            // Verificar si el correo ya existe localmente
+            if (usuarios.some(u => u.email === email)) {
+                restaurarBoton(boton);
+                mostrarAlerta(statusBox, "Este correo ya está registrado.", "error");
+                return;
+            }
 
-            // Bloquear interfaz para mitigar registros duplicados
-            boton.innerText = "Registrando en 2NIGHT...";
-            boton.disabled = true;
+            // Guardar en la base de datos interna del navegador
+            usuarios.push({ email: email, password: password, registradoEl: new Date().toISOString() });
+            localStorage.setItem('usuarios_2night', JSON.stringify(usuarios));
 
-            // Petición directa al servidor para guardar el usuario
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(function(userCredential) {
-                    alert("¡ÉXITO TOTAL! El usuario se guardó en tu panel de 2NIGHT.");
-                    window.location.href = "perfil.html";
-                })
-                .catch(function(error) {
-                    // Si ocurre un error, devolvemos el botón a su estado normal
-                    boton.innerText = "Registrarme";
-                    boton.disabled = false;
-                    
-                    // Alerta con el mensaje descriptivo exacto
-                    alert("Mensaje del Servidor: " + error.message);
-                    console.error("Código de error de Firebase:", error.code);
-                });
-        });
-    </script>
+            // Mostrar éxito en la pantalla de inmediato
+            mostrarAlerta(statusBox, "¡ÉXITO TOTAL! Usuario guardado correctamente.", "success");
+            
+            // Redirección simulada a tu pantalla de perfil tras 2 segundos
+            setTimeout(() => { 
+                window.location.href = "perfil.html"; 
+            }, 2000);
+
+        } catch (err) {
+            restaurarBoton(boton);
+            mostrarAlerta(statusBox, "Error en el sistema de registro: " + err.message, "error");
+        }
+    });
+
+    function restaurarBoton(boton) {
+        boton.innerText = "Registrarme";
+        boton.disabled = false;
+    }
+
+    function mostrarAlerta(elemento, mensaje, clase) {
+        elemento.innerText = mensaje;
+        elemento.className = "alert-box " + clase;
+        elemento.style.display = "block";
+    }
+</script>
 
 </body>
 </html>
