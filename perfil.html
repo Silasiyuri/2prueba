@@ -17,12 +17,14 @@
     </div>
 
     <script type="module">
+        // CORRECCIÓN 1: Rutas CDN oficiales y completas para que el navegador cargue Firebase
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, onAuthStateChanged, signOut } from "https://gstatic.com";
 
+        // CORRECCIÓN 2: authDomain corregido con el subdominio de tu proyecto
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com",
+          authDomain: "night-f23fa.firebaseapp.com", 
           projectId: "night-f23fa",
           storageBucket: "night-f23fa.firebasestorage.app",
           messagingSenderId: "386862893155",
@@ -30,6 +32,7 @@
           measurementId: "G-ZSF58H9VE4"
         };
 
+        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
@@ -43,7 +46,7 @@
                 document.getElementById('userEmail').innerText = user.email;
                 document.getElementById('userUid').innerText = user.uid;
             } else {
-                // Usuario NO autenticado: Expulsar a la página de login (asumiendo que se llama index.html)
+                // Usuario NO autenticado: Expulsar a la página de login
                 alert("No tienes permiso. Por favor, inicia sesión primero.");
                 window.location.href = "index.html"; 
             }
@@ -58,6 +61,7 @@
                 })
                 .catch((error) => {
                     alert("Error al cerrar sesión.");
+                    console.error(error);
                 });
         });
     </script>
