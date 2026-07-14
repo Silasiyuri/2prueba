@@ -15,14 +15,12 @@
     <p>¿Ya tienes cuenta? <a href="index.html">Inicia sesión aquí</a></p>
 
     <script type="module">
-        // URLs oficiales y completas corregidas
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
 
-        // authDomain corregido correctamente
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "night-f23fa.firebaseapp.com",
+          authDomain: "://firebaseapp.com",
           projectId: "night-f23fa",
           storageBucket: "night-f23fa.firebasestorage.app",
           messagingSenderId: "386862893155",
@@ -40,20 +38,12 @@
 
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    alert("¡Cuenta creada con éxito! Redirigiendo a tu perfil...");
-                    window.location.href = "perfil.html";
+                    alert("¡Cuenta creada con éxito!");
+                    // CORRECCIÓN: Apunta directamente a la subcarpeta del repositorio
+                    window.location.href = "/2prueba/perfil.html";
                 })
                 .catch((error) => {
-                    let mensajeError = "Error al registrar usuario.";
-                    if (error.code === 'auth/email-already-in-use') {
-                        mensajeError = "Este correo electrónico ya está registrado.";
-                    } else if (error.code === 'auth/weak-password') {
-                        mensajeError = "La contraseña debe tener al menos 6 caracteres.";
-                    } else if (error.code === 'auth/invalid-email') {
-                        mensajeError = "El formato del correo electrónico no es válido.";
-                    }
-                    alert(mensajeError);
-                    console.error("Detalle:", error.message);
+                    alert("Error al registrar: " + error.message);
                 });
         });
     </script>
