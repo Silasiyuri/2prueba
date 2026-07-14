@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Perfil Privado</title>
 </head>
 <body>
@@ -15,7 +16,7 @@
         <button id="logoutBtn">Cerrar Sesión</button>
     </div>
 
- <script type="module">
+    <script type="module">
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, onAuthStateChanged, signOut } from "https://gstatic.com";
 
@@ -40,8 +41,7 @@
                 document.getElementById('userEmail').innerText = user.email;
                 document.getElementById('userUid').innerText = user.uid;
             } else {
-                alert("No tienes permiso. Redirigiendo al inicio...");
-                // CORRECCIÓN: Retorna a la subcarpeta del repositorio
+                // Si entra directo sin sesión, lo expulsa al login principal
                 window.location.href = "/2prueba/index.html"; 
             }
         });
@@ -50,7 +50,7 @@
             signOut(auth)
                 .then(() => {
                     alert("Sesión cerrada correctamente.");
-                    window.location.href = "/2running/index.html";
+                    window.location.href = "/2prueba/index.html";
                 })
                 .catch((error) => {
                     alert("Error al cerrar sesión.");
