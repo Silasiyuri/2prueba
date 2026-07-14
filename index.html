@@ -40,22 +40,22 @@
     </form>
     
     <script type="module">
-        // CORREGIDO: Rutas de importación completas con la versión modular oficial de Firebase v10
+        // 1. RUTAS COMPLETAS: Direcciones web oficiales hacia los archivos JavaScript de Firebase
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
 
-        // CORREGIDO: Configuración con el subdominio authDomain reparado para tu proyecto night-f23fa
+        // 2. CONFIGURACIÓN REPARADA: Conexión directa con tu base de datos de 2NIGHT
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com",
+          authDomain: "night-f23fa.firebaseapp.com",
           projectId: "night-f23fa"
         };
 
-        // Inicializar Firebase
+        // Inicializar la aplicación
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Escuchar el envío del formulario
+        // Controlar el formulario de la página
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -63,48 +63,28 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Bloquear el botón para evitar múltiples clics
+            // Bloquear el botón para evitar clics repetidos
             boton.innerText = "Registrando en 2NIGHT...";
             boton.disabled = true;
 
-            // Crear el usuario en Firebase Authentication
+            // Enviar datos a Firebase Authentication
             createUserWithEmailAndPassword(auth, email, password)
                 .then(function(userCredential) {
                     alert("¡ÉXITO TOTAL! El usuario se guardó en tu panel de 2NIGHT.");
-                    // Nota: Asegúrate de tener creado el archivo perfil.html en tu repositorio
                     window.location.href = "perfil.html";
                 })
                 .catch(function(error) {
-                    // Restaurar el botón en caso de error
+                    // Si el servidor responde con un error, se reactiva el formulario
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
                     
-                    // Alerta nativa para el usuario final
+                    // Alerta que muestra el motivo exacto del fallo
                     alert("Respuesta de Firebase: " + error.message);
                     
-                    // Muestra el código de error técnico exacto en la consola (F12)
                     console.error("Código de error:", error.code);
                     console.error("Mensaje completo:", error.message);
                 });
         });
     </script>
-
-    <script type="module">
-    // Añadir ?v=1 al final obliga al navegador a saltarse la caché y descargar el código real
-    import { initializeApp } from "https://gstatic.com";
-    import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-      authDomain: "://firebaseapp.com",
-      projectId: "night-f23fa"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    
-    // ... (El resto de tu lógica addEventListener se queda exactamente igual)
-</script>
-
 </body>
 </html>
