@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control - 2NIGHT</title>
+    <title>Sistema Oficial - 2NIGHT</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; }
-        .status-top { background-color: #27ae60; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; align-items: center; justify-content: center; min-height: 80vh; }
         .container { max-width: 360px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h2 { text-align: center; margin-bottom: 20px; color: #111; }
         input { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
@@ -18,9 +17,6 @@
     </style>
 </head>
 <body>
-
-<!-- INDICADOR DE MOTOR DE RED NATIVO -->
-<div class="status-top" id="conexionStatus">🚀 CANAL NATIVO ACTIVADO: Listo para registrar sin bloqueos</div>
 
 <div class="container">
     <h2>Crear Cuenta (2NIGHT)</h2>
@@ -41,12 +37,12 @@
         var email = document.getElementById('email').value.trim();
         var password = document.getElementById('password').value;
 
-        boton.innerText = "ENVIANDO DATOS A GOOGLE...";
+        boton.innerText = "CONECTANDO CON SERVIDORES...";
         boton.disabled = true;
         statusBox.style.display = "none";
 
-        // Conexión directa a la API Rest de Google Identity Toolkit usando tu nueva llave de API
-        var urlApi = "https://googleapis.com" + "AIzaSyCpgq6V2u0_SUry-XNcoTBd-3GzKpho2BM";
+        // Canal de comunicación directo con tu nueva API Key limpia de night-sistema
+        var urlApi = "https://googleapis.com" + "AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0";
 
         var datosEnvio = {
             email: email,
@@ -54,7 +50,7 @@
             returnSecureToken: true
         };
 
-        // Petición nativa Fetch (Sin librerías externas)
+        // Petición nativa Fetch estable
         fetch(urlApi, {
             method: 'POST',
             body: JSON.stringify(datosEnvio),
@@ -63,18 +59,18 @@
         .then(function(respuesta) {
             return respuesta.json().then(function(datos) {
                 if (respuesta.ok) {
-                    statusBox.innerText = "¡ÉXITO TOTAL EN 2NIGHT!\nUsuario guardado correctamente. Revisa la pestaña Users en tu Consola.";
+                    statusBox.innerText = "¡ÉXITO REAL TOTAL!\nUsuario guardado correctamente en tu proyecto night-sistema.";
                     statusBox.className = "alert-box success";
                     statusBox.style.display = "block";
                 } else {
                     var motivo = datos.error ? datos.error.message : "Desconocido";
                     
-                    // Traducción de errores comunes de Google
-                    if (motivo === "EMAIL_EXISTS") { motivo = "Este correo ya está registrado en tu proyecto."; }
-                    if (motivo === "WEAK_PASSWORD") { motivo = "La contraseña debe tener un mínimo de 6 caracteres."; }
-                    if (motivo === "OPERATION_NOT_ALLOWED") { motivo = "Activa el proveedor Correo/Contraseña en la consola de Firebase."; }
+                    // Traducción de las respuestas del servidor de Google
+                    if (motivo === "EMAIL_EXISTS") { motivo = "Este correo ya está registrado."; }
+                    if (motivo === "WEAK_PASSWORD") { motivo = "La contraseña debe tener mínimo 6 letras."; }
+                    if (motivo === "OPERATION_NOT_ALLOWED") { motivo = "Error: Olvidaste habilitar Correo/Contraseña en el panel de night-sistema."; }
                     
-                    statusBox.innerText = "RESPUESTA DE GOOGLE:\n" + motivo;
+                    statusBox.innerText = "AVISO DEL SERVIDOR:\n" + motivo;
                     statusBox.className = "alert-box error";
                     statusBox.style.display = "block";
                 }
@@ -84,7 +80,7 @@
         })
         .catch(function(error) {
             console.error(error);
-            statusBox.innerText = "ERROR DE RED:\nNo hay conexión con el servidor o tu firewall bloquea la salida.";
+            statusBox.innerText = "ERROR DE SISTEMA:\nHubo un problema con la salida de datos de red.";
             statusBox.className = "alert-box error";
             statusBox.style.display = "block";
             boton.innerText = "Registrarme Ahora";
