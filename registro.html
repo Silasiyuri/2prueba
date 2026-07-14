@@ -13,7 +13,7 @@
         <button type="submit">Registrarme</button>
     </form>
     <br>
-    <p>¿Ya tienes cuenta? <a href="/2prueba/index.html">Inicia sesión aquí</a></p>
+    <p>¿Ya tienes cuenta? <a href="index.html">Inicia sesión aquí</a></p>
  <script type="module">
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
@@ -39,7 +39,7 @@
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     alert("¡Cuenta creada con éxito!");
-                    window.location.href = "/2prueba/perfil.html";
+                    window.location.href = "perfil.html";
                 })
                 .catch((error) => {
                     alert("Error al registrar: " + error.message);
