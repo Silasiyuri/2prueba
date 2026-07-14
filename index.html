@@ -3,120 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Oficial - 2NIGHT</title>
+    <title>Consola de Registro en la Nube - Firebase</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; }
-        .status-top { background-color: #34495e; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
-        .container { max-width: 360px; width: 100%; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; margin-bottom: 20px; color: #111; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button { width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; }
-        button:disabled { background-color: #cccccc; cursor: not-allowed; }
-        .alert-box { margin-top: 15px; padding: 12px; font-size: 14px; border-radius: 4px; display: none; text-align: center; font-weight: bold; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; text-align: left; font-family: monospace; white-space: pre-wrap; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { background-color: #0c0c0e; color: #f5f5f7; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 30px; }
+        h1 { font-size: 24px; margin-bottom: 25px; color: #fff; text-align: center; }
+        .wrapper { display: flex; gap: 24px; width: 100%; max-width: 900px; flex-wrap: wrap; }
+        .panel-form { background-color: #16161a; padding: 30px; border-radius: 12px; flex: 1; min-width: 320px; border: 1px solid #222227; }
+        h2 { font-size: 18px; margin-bottom: 20px; color: #00cfec; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #a1a1aa; font-size: 13px; }
+        .form-group input { width: 100%; padding: 12px 14px; border: 2px solid #2d2d35; border-radius: 8px; background-color: #0c0c0e; color: #fff; font-size: 16px; }
+        .form-group input:focus { border-color: #00cfec; outline: none; }
+        button { width: 100%; padding: 14px; background-color: #00cfec; color: #0c0c0e; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .monitor { background-color: #000000; border: 1px solid #222227; border-radius: 12px; padding: 20px; flex: 1; min-width: 320px; max-height: 400px; overflow-y: auto; font-family: monospace; }
+        .log-line { margin-bottom: 8px; font-size: 12px; line-height: 1.4; }
     </style>
+
+    <!-- CARGA SEGURA DE FIREBASE SDK v8 -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 </head>
 <body>
 
+    <h1>Consola de Registro en Producción</h1>
 
-    
-<!-- NOTIFICACIÓN 1: ESTADO DEL SISTEMA DE RED -->
-<div class="status-top" id="conexionStatus">⏳ Inicializando módulos de red seguro...</div>
+    <div class="wrapper">
+        <div class="panel-form">
+            <h2>Crear Cuenta de Usuario</h2>
+            <form id="formulario-registro">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="correo-usuario" required placeholder="nombre@correo.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña de Acceso</label>
+                    <input type="password" id="clave-usuario" required placeholder="Mínimo 6 caracteres">
+                </div>
+                <button type="submit">Guardar en Servidor Remoto</button>
+            </form>
+        </div>
 
-<!-- FORMULARIO DE ACCESO -->
-<div class="container" id="vistaRegistro">
-    <h2>Crear Cuenta (2NIGHT)</h2>
-    <form id="registerForm">
-        <input type="email" id="email" placeholder="Correo Electrónico" required>
-        <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required>
-        <button type="submit" id="btnRegistrar">Registrarme Ahora</button>
-    </form>
-    
-    <!-- NOTIFICACIÓN 2: ESTADO DEL REGISTRO DE USUARIOS -->
-    <div id="statusMessage" class="alert-box"></div>
-</div>
+        <div class="monitor">
+            <div style="color: #00ff66; border-bottom: 1px solid #222227; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold;">📋 INFORME DE FLUJO DE RED INMEDIATO:</div>
+            <div id="pantalla-logs"></div>
+        </div>
+    </div>
 
-<!-- SISTEMA MODULAR INTEGRADO DE ALTA COMPATIBILIDAD (Soporta GitHub Pages sin CORS) -->
-<script type="module">
-    import { initializeApp } from "https://gstatic.com";
-    import { getAuth, createUserWithEmailAndPassword } from "https://gstatic.com";
+    <script>
+        const logsDiv = document.getElementById('pantalla-logs');
+        const form = document.getElementById('formulario-registro');
 
-    var statusTop = document.getElementById('conexionStatus');
+        function registrarLog(texto, color = '#f5f5f7') {
+            const t = new Date().toLocaleTimeString();
+            logsDiv.innerHTML += `<div class="log-line" style="color: ${color}">[${t}] ${texto}</div>`;
+            document.querySelector('.monitor').scrollTop = document.querySelector('.monitor').scrollHeight;
+        }
 
-    // Credenciales limpias oficiales del proyecto: night-sistema
-    const firebaseConfig = {
-      apiKey: "AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0",
-      authDomain: "://firebaseapp.com",
-      projectId: "night-sistema",
-      storageBucket: "night-sistema.firebasestorage.app",
-      messagingSenderId: "807108186238",
-      appId: "1:807108186238:web:d36ee74cf0e2e095e3c82f"
-    };
+        // Inicialización de tus credenciales verificadas
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzBa3rUUKQ6rlmtmbrqdZN3lWulBBbLG0",
+            authDomain: "://firebaseapp.com",
+            projectId: "night-sistema"
+        };
 
-    // Intentar enlazar con los servidores de Google de forma inmediata
-    try {
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        
-        // Notificación de que el sistema cargó con éxito las llaves
-        statusTop.innerHTML = "🟢 CONEXIÓN ESTABLECIDA: El código enlazó correctamente con night-sistema.";
-        statusTop.style.backgroundColor = "#27ae60";
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            registrarLog("🚀 NÚCLEO INICIALIZADO: El sistema está listo esperando envíos.", "#00ff66");
+        } else {
+            registrarLog("❌ ERROR: El navegador bloqueó los archivos de Google.", "#ff3333");
+        }
 
-        // Escuchador del formulario
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const boton = document.getElementById('btnRegistrar');
-            const statusBox = document.getElementById('statusMessage');
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+            const email = document.getElementById('correo-usuario').value;
+            const password = document.getElementById('clave-usuario').value;
 
-            // Notificación visual de progreso
-            boton.innerText = "ENVIANDO DATOS A FIREBASE...";
-            boton.disabled = true;
-            statusBox.style.display = "none";
+            registrarLog(`⚙️ Procesando credenciales para: ${email}`, "#fff");
+            registrarLog("📡 Transmitiendo paquete de red de forma remota...", "#ffcc00");
 
-            // Intentar inyectar el usuario en la base de datos de Google
-            createUserWithEmailAndPassword(auth, email, password)
+            firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    // Notificación de Éxito Absoluto
-                    statusBox.innerText = "¡ÉXITO TOTAL EN TU WEB!\n\nEl usuario se ha guardado correctamente.\nYa puedes ver la cuenta en la lista de tu consola.";
-                    statusBox.className = "alert-box success";
-                    statusBox.style.display = "block";
-                    
-                    boton.innerText = "Registrarme Ahora";
-                    boton.disabled = false;
+                    registrarLog(`🎉 ¡ÉXITO ROTUNDO! Usuario guardado automáticamente en la nube.`, "#00ff66");
+                    registrarLog(`🆔 UID asignado por Firebase: ${userCredential.user.uid}`, "#00ff66");
+                    form.reset();
                 })
                 .catch((error) => {
-                    console.error("Detalle completo devuelto por el servidor:", error);
-                    let mensajeExplicativo = error.message; 
-                    
-                    // Traducciones directas de respuestas de la consola
-                    if (error.code === 'auth/email-already-in-use') {
-                        mensajeExplicativo = "Este correo ya está registrado en tu proyecto.";
-                    } else if (error.code === 'auth/weak-password') {
-                        mensajeExplicativo = "La contraseña es muy débil. Debe tener un mínimo de 6 caracteres.";
-                    } else if (error.code === 'auth/operation-not-allowed') {
-                        mensajeExplicativo = "¡FALTA ACTIVAR EL INTERRUPTOR!\nPor favor, ve a la pestaña 'Sign-in method' en Firebase y activa Correo electrónico/Contraseña.";
-                    }
-
-                    // Notificación de error de Firebase
-                    statusBox.innerText = "AVISO DEL SERVIDOR DE GOOGLE:\n\n• Código: " + error.code + "\n• Mensaje: " + mensajeExplicativo;
-                    statusBox.className = "alert-box error";
-                    statusBox.style.display = "block";
-                    
-                    boton.innerText = "Registrarme Ahora";
-                    boton.disabled = false;
+                    registrarLog(`❌ OPERACIÓN RECHAZADA POR EL SERVIDOR`, "#ff3333");
+                    registrarLog(`Código técnico: ${error.code}`, "#ff3333");
+                    registrarLog(`Respuesta del servidor: ${error.message}`, "#ff3333");
                 });
         });
-
-    } catch (error) {
-        // Notificación de error crítico antes de procesar el formulario
-        statusTop.innerHTML = "❌ ERROR INTERNO DEL ARCHIVO:\n" + error.message;
-        statusTop.style.backgroundColor = "#c0392b";
-    }
-</script>
-
+    </script>
 </body>
 </html>
