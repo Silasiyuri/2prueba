@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro 2NIGHT</title>
-    <!-- Cargamos las librerías oficiales de Firebase para saltar el bloqueo del navegador -->
+    <title>Registro Oficial 2NIGHT</title>
+    <!-- SDK oficial de Firebase para evitar bloqueos del navegador -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 </head>
@@ -17,14 +17,14 @@
     </form>
     
     <script>
-        // Tu clave de API e inicialización del proyecto 2NIGHT
+        // CONFIGURACIÓN CORREGIDA: Combina el ID real heredado de tu cuenta de servicio con el nuevo subdominio
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com", // El subdominio nativo asignado por Google Cloud
-          projectId: "2night-auth"
+          authDomain: "://firebaseapp.com", 
+          projectId: "night-f23fa" 
         };
 
-        // Inicializar el SDK nativo
+        // Inicializar de forma segura
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -33,22 +33,21 @@
             e.preventDefault();
             
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Registrando en la nube de 2NIGHT...";
+            boton.innerText = "Conectando con 2NIGHT...";
             boton.disabled = true;
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Función interna de Google que el navegador permite ejecutar de forma segura
+            // Petición directa a través del canal oficial del SDK
             firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then(function(userCredential) {
-                    alert("¡ÉXITO COMPLETO! Tu usuario se ha registrado en la consola 2NIGHT.");
+                    alert("¡ÉXITO TOTAL! Tu usuario se ha registrado en tu consola 2NIGHT.");
                     window.location.href = "perfil.html";
                 })
                 .catch(function(error) {
                     boton.innerText = "Registrarme";
                     boton.disabled = false;
-                    // Alerta interna de diagnóstico directo de Firebase
                     alert("Firebase respondió: " + error.message);
                 });
         });
