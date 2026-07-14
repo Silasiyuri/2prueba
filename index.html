@@ -12,53 +12,61 @@
         <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)" required><br><br>
         <button type="submit" id="btnRegistrar">Registrarme</button>
     </form>
+
+    <!-- Depurador visual: Muestra el error directamente en el cuerpo de la página -->
+    <div id="debugLog" style="margin-top:20px; padding:10px; border:1px solid #ccc; background:#f9f9f9; display:none; color:red; font-family:monospace; font-size:12px;"></div>
     
- <script>
+    <script>
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const boton = document.getElementById('btnRegistrar');
-            boton.innerText = "Conectando de forma segura...";
+            const debugBox = document.getElementById('debugLog');
+            
+            boton.innerText = "Conectando...";
             boton.disabled = true;
+            debugBox.style.display = "none";
+            debugBox.innerText = "";
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // URL CORREGIDA: Incluye https:// obligatorio para que no lo bloquee el celular
+            // URL con la API Key del proyecto night-f23fa
             const url = "https://googleapis.com";
 
-            fetch(url, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    email: email, 
-                    password: password, 
-                    returnSecureToken: true 
-                })
-            })
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                if (data.error) {
-                    // Si Firebase detecta un problema con el correo o contraseña, lo avisa aquí
-                    alert("Firebase denegó el registro: " + data.error.message);
-                    boton.innerText = "Registrarme";
-                    boton.disabled = false;
-                } else {
-                    // Registro exitoso en la nube
+            // Se utiliza XMLHttpRequest para evadir las restricciones estrictas de Fetch API en iOS
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onload = function() {
+                const responseData = JSON.parse(xhr.responseText);
+                if (xhr.status >= 200 && xhr.status < 300) {
                     alert("¡ÉXITO TOTAL! Tu usuario se ha registrado en Firebase.");
                     window.location.href = "perfil.html";
+                } else {
+                    boton.innerText = "Registrarme";
+                    boton.disabled = false;
+                    const errorMsg = responseData.error ? responseData.error.message : "Error desconocido";
+                    alert("Firebase denegó el registro: " + errorMsg);
                 }
-            })
-            .catch(function(error) {
-                // Alerta en caso de que un bloqueador de anuncios interfiera en la red
-                alert("Error de conexión: " + error.message);
+            };
+
+            xhr.onerror = function() {
                 boton.innerText = "Registrarme";
                 boton.disabled = false;
-            });
+                
+                // Imprime el error directamente en la interfaz por si el alert se bloquea
+                debugBox.style.display = "block";
+                debugBox.innerHTML = "<strong>Error de red detectado:</strong> El navegador bloqueó la salida de datos.<br>Asegúrate de que no estás usando extensiones de privacidad, navegación privada restrictiva o firewalls móviles.";
+                alert("Error de conexión: El navegador bloqueó la petición.");
+            };
+
+            xhr.send(JSON.stringify({ 
+                email: email, 
+                password: password, 
+                returnSecureToken: true 
+            }));
         });
     </script>
 </body>
