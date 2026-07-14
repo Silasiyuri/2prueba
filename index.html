@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
- <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión</title>
+    <!-- SOLUCIÓN CRÍTICA: Fuerza al navegador a mantenerse siempre dentro de tu repositorio -->
+    <base href="/2prueba/">
 </head>
 <body>
     <h2>Iniciar Sesión</h2>
- <form id="loginForm">
+    <form id="loginForm">
         <input type="email" id="email" placeholder="Correo" required><br><br>
         <input type="password" id="password" placeholder="Contraseña" required><br><br>
         <button type="submit">Entrar</button>
     </form>
     <br>
     <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
- <script type="module">
+
+    <script type="module">
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, signInWithEmailAndPassword } from "https://gstatic.com";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBHPl53nlowROldN-IGbmECGYhz3lRz7Tc",
-          authDomain: "://firebaseapp.com",
+          authDomain: "night-f23fa.firebaseapp.com",
           projectId: "night-f23fa",
           storageBucket: "night-f23fa.firebasestorage.app",
           messagingSenderId: "386862893155",
@@ -28,7 +31,7 @@
           measurementId: "G-ZSF58H9VE4"
         };
 
-       const app = initializeApp(firebaseConfig);
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
         document.getElementById('loginForm').addEventListener('submit', (e) => {
