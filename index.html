@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
     
-    <!-- Cargamos la SDK oficial empaquetada para evitar bloqueos de red en Mac -->
+    <!-- Cargamos la SDK oficial compacta para evitar cargas lentas -->
     <script src="https://jsdelivr.net"></script>
     
-<style>
+    <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); }
@@ -32,7 +32,8 @@
     <div class="card">
         <h2>Ingreso a la Nube</h2>
         
-        <form id="authForm">
+        <!-- Eliminamos la etiqueta <form> para evitar que el navegador intente recargar o congelar la página -->
+        <div id="authForm">
             <div class="form-group">
                 <label>Correo Electrónico</label>
                 <input type="email" id="email" required placeholder="ejemplo@correo.com">
@@ -44,23 +45,24 @@
             </div>
             
             <div class="btn-group">
-                <button type="button" id="btnLogin" class="btn-primary">Iniciar Sesión</button>
-                <button type="button" id="btnRegister" class="btn-secondary">Registrarse</button>
+                <!-- Los eventos onclick directos evitan bloqueos de hilos de ejecución en Mac -->
+                <button type="button" id="btnLogin" class="btn-primary" onclick="enviarDatos('login')">Iniciar Sesión</button>
+                <button type="button" id="btnRegister" class="btn-secondary" onclick="enviarDatos('registro')">Registrarse</button>
             </div>
-        </form>
+        </div>
 
         <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        const SUPABASE_URL = "https://supabase.co"; 
+        const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
-        // Inicialización oficial de la SDK con configuraciones globales de red estándar
+        // Inicialización nativa aislada sin almacenamiento persistente para evitar bloqueos por cookies en Safari/Mac
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
-                persistSession: true,
-                storage: window.localStorage
+                persistSession: false,
+                autoRefreshToken: false
             }
         });
 
@@ -68,56 +70,71 @@
         const btnLogin = document.getElementById('btnLogin');
         const btnRegister = document.getElementById('btnRegister');
 
-        async function procesarAuth(tipo) {
-            const email = document.getElementById('email').value;
+        // Función global directa disparada limpiamente por los botones
+        async function enviarDatos(accion) {
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             if (!email || !password) {
-                alert("Por favor rellena todos los campos.");
+                alert("Por favor, rellena todos los campos.");
                 return;
             }
 
+            if (password.length < 6) {
+                alert("La contraseña debe tener mínimo 6 caracteres.");
+                return;
+            }
+
+            // Bloqueo visual controlado e instantáneo
             statusMessage.style.display = "none";
             btnLogin.disabled = true;
             btnRegister.disabled = true;
 
             try {
-                let resultado;
-                if (tipo === 'registro') {
-                    resultado = await supabaseClient.auth.signUp({ email, password });
+                let respuesta;
+
+                if (accion === 'registro') {
+                    // Endpoint de creación de usuarios
+                    respuesta = await supabaseClient.auth.signUp({ email, password });
                 } else {
-                    resultado = await supabaseClient.auth.signInWithPassword({ email, password });
+                    // Endpoint de inicio de sesión
+                    respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
                 }
 
+                const { data, error } = respuesta;
+
+                // Desbloqueamos controles
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
                 statusMessage.style.display = "block";
 
-                if (resultado.error) {
-                    statusMessage.textContent = "Error de Supabase: " + resultado.error.message;
+                if (error) {
+                    statusMessage.textContent = "Error de Supabase: " + error.message;
                     statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                     statusMessage.style.color = "#f87171";
-                } else {
-                    statusMessage.textContent = tipo === 'registro' 
-                        ? "¡Registro Exitoso! Usuario creado de forma directa." 
-                        : "¡Login Correcto! Has ingresado con éxito.";
+                } else if (data && data.user) {
+                    if (accion === 'registro') {
+                        statusMessage.textContent = "¡Registro completado con éxito! El usuario ya figura en tu base de datos.";
+                    } else {
+                        statusMessage.textContent = "¡Login correcto! Has iniciado sesión de manera segura.";
+                    }
                     statusMessage.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
                     statusMessage.style.color = "#34d399";
-                    document.getElementById('authForm').reset();
+                    
+                    // Limpieza manual limpia de campos
+                    document.getElementById('email').value = "";
+                    document.getElementById('password').value = "";
                 }
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
                 statusMessage.style.display = "block";
-                statusMessage.textContent = "Fallo de comunicación interna.";
+                statusMessage.textContent = "Fallo de ejecución local en Mac: " + err.message;
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
                 console.error(err);
             }
         }
-
-        btnLogin.addEventListener('click', () => procesarAuth('login'));
-        btnRegister.addEventListener('click', () => procesarAuth('registro'));
     </script>
 </body>
 </html>
