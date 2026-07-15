@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro Seguro - Supabase</title>
+    <title>Depuración de Registro - Supabase</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); }
-        h2 { font-size: 22px; margin-bottom: 24px; color: #10b981; text-align: center; font-weight: 700; }
+        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; }
+        h2 { font-size: 22px; margin-bottom: 24px; color: #10b981; text-align: center; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; font-weight: 500; }
-        .form-group input { width: 100%; padding: 12px 16px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s; }
-        .form-group input:focus { border-color: #10b981; }
-        button { width: 100%; padding: 14px; background-color: #10b981; color: #0f172a; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
-        button:hover { background-color: #059669; }
-        button:disabled { background-color: #334155; color: #94a3b8; cursor: not-allowed; }
-        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
+        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px 16px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; }
+        button { width: 100%; padding: 14px; background-color: #10b981; color: #0f172a; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .msg { margin-top: 20px; font-size: 14px; text-align: center; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
         .success { display: block; background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
         .error { display: block; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
@@ -25,21 +22,17 @@
 
     <div class="card">
         <h2>Registro en la Nube</h2>
-        
         <form id="registerForm">
             <div class="form-group">
                 <label>Correo Electrónico</label>
                 <input type="email" id="email" required placeholder="ejemplo@correo.com">
             </div>
-            
             <div class="form-group">
                 <label>Contraseña</label>
                 <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
             </div>
-            
             <button type="submit" id="btnSubmit">Crear Cuenta</button>
         </form>
-
         <div id="statusMessage" class="msg"></div>
     </div>
 
@@ -53,14 +46,12 @@
 
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             statusMessage.style.display = "none";
-            statusMessage.className = "msg";
             button.disabled = true;
-            button.textContent = "Procesando registro...";
+            button.textContent = "Enviando datos...";
 
             try {
                 const response = await fetch(SUPABASE_AUTH_URL, {
@@ -70,15 +61,7 @@
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password,
-                        // Añadimos metadatos vacíos para satisfacer esquemas estrictos de bases de datos
-                        options: {
-                            data: {},
-                            redirectTo: window.location.href
-                        }
-                    })
+                    body: JSON.stringify({ email: email, password: password })
                 });
 
                 const result = await response.json();
@@ -86,19 +69,18 @@
                 button.textContent = "Crear Cuenta";
 
                 if (!response.ok || result.error) {
-                    // Extraemos el mensaje de error real devuelto por la API de Supabase
-                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || JSON.stringify(result);
-                    statusMessage.textContent = "Error de Supabase: " + errorMsg;
+                    // Muestra en pantalla el objeto de error completo que envía Supabase
+                    statusMessage.textContent = "RESPUESTA DE ERROR DEL SERVIDOR:\n" + JSON.stringify(result, null, 2);
                     statusMessage.className = "msg error";
                 } else {
-                    statusMessage.textContent = "¡Éxito de procesamiento! Revisa tu lista de usuarios.";
+                    statusMessage.textContent = "¡ÉXITO TOTAL!\nUsuario creado con ID: " + result.id;
                     statusMessage.className = "msg success";
                     form.reset();
                 }
             } catch (err) {
                 button.disabled = false;
                 button.textContent = "Crear Cuenta";
-                statusMessage.textContent = "Error de Red: No hay respuesta del servidor remoto.";
+                statusMessage.textContent = "ERROR LOCAL DE RED:\n" + err.message;
                 statusMessage.className = "msg error";
             }
         });
