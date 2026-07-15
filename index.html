@@ -20,15 +20,16 @@
         .btn-secondary { background-color: #334155; color: #f8fafc; }
         .btn-secondary:hover { background-color: #475569; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
-        .success { display: block; background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .error { display: block; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: block; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
+        .hidden { display: none !important; }
+        .success { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .error { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2 id="formTitle">Ingreso a la Nube</h2>
+        <h2>Ingreso a la Nube</h2>
         
         <form id="authForm">
             <div class="form-group">
@@ -38,33 +39,48 @@
             
             <div class="form-group">
                 <label>Contraseña</label>
-                <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
+                <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
             </div>
             
             <div class="btn-group">
-                <!-- Botón para iniciar sesión -->
-                <button type="button" id="btnLogin" class="btn-primary">Iniciar Sesión</button>
-                <!-- Botón para registrar nueva cuenta -->
-                <button type="button" id="btnRegister" class="btn-secondary">Registrarse</button>
+                <!-- Botón nativo para Login -->
+                <button type="submit" id="btnLogin" class="btn-primary" name="action" value="login">Iniciar Sesión</button>
+                <!-- Botón nativo para Registro -->
+                <button type="submit" id="btnRegister" class="btn-secondary" name="action" value="signup">Registrarse</button>
             </div>
         </form>
 
-        <div id="statusMessage" class="msg"></div>
+        <div id="statusMessage" class="msg hidden"></div>
     </div>
 
     <script>
         const SUPABASE_BASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
+        const form = document.getElementById('authForm');
         const statusMessage = document.getElementById('statusMessage');
         const btnLogin = document.getElementById('btnLogin');
         const btnRegister = document.getElementById('btnRegister');
 
-        // Función central para conectar con la API de Supabase
-        async function conectarSupabase(endpoint, email, password) {
-            statusMessage.style.display = "none";
+        form.addEventListener('submit', async function(e) {
+            // Detenemos el envío nativo para procesarlo asíncronamente
+            e.preventDefault();
+
+            // Determinamos qué botón fue presionado mediante el foco activo
+            const botonPresionado = document.activeElement ? document.activeElement.value : 'login';
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Estado de carga visual garantizado
+            statusMessage.className = "msg hidden";
             btnLogin.disabled = true;
             btnRegister.disabled = true;
+            
+            let endpoint = 'signup';
+            if (botonPresionado === 'login') {
+                endpoint = 'token?grant_type=password';
+            }
 
             try {
                 const response = await fetch(`${SUPABASE_BASE_URL}/${endpoint}`, {
@@ -74,51 +90,37 @@
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email: email, password: password })
                 });
 
                 const result = await response.json();
+                
+                // Restablecemos botones
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
+                statusMessage.classList.remove('hidden');
 
                 if (!response.ok || result.error) {
-                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de credenciales';
-                    statusMessage.textContent = "Error: " + errorMsg;
+                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de credenciales o de políticas.';
+                    statusMessage.textContent = "Respuesta del Servidor:\n" + errorMsg;
                     statusMessage.className = "msg error";
                 } else {
-                    if (endpoint === 'signup') {
-                        statusMessage.textContent = "¡Registro exitoso!\nUsuario guardado en la base de datos.";
+                    if (botonPresionado === 'signup') {
+                        statusMessage.textContent = "¡Registro Exitoso!\nUsuario creado correctamente en Supabase.";
                     } else {
-                        statusMessage.textContent = "¡Login Correcto!\nBienvenido al sistema. Token: " + result.access_token.substring(0, 15) + "...";
+                        statusMessage.textContent = "¡Login Correcto!\nHas ingresado al sistema de manera segura.";
                     }
-                    statusMessage.className = "msg success";
+                    statusMessage.className = "msg mapping success";
+                    form.reset();
                 }
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Error de conexión con el servidor.";
+                statusMessage.classList.remove('hidden');
+                statusMessage.textContent = "Error Local de Red:\nNo hay comunicación con Supabase.";
                 statusMessage.className = "msg error";
+                console.error(err);
             }
-        }
-
-        // Evento al hacer clic en Iniciar Sesión (Login)
-        btnLogin.addEventListener('click', () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            if(!email || !password) return alert("Rellena todos los campos");
-            
-            // Endpoint oficial de Supabase para Login
-            conectarSupabase('token?grant_type=password', email, password);
-        });
-
-        // Evento al hacer clic en Registrarse (Sign Up)
-        btnRegister.addEventListener('click', () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            if(!email || !password) return alert("Rellena todos los campos");
-            
-            // Endpoint oficial de Supabase para crear usuarios
-            conectarSupabase('signup', email, password);
         });
     </script>
 </body>
