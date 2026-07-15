@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
-    
-    <!-- Cargamos la SDK oficial v2 -->
     <script src="https://jsdelivr.net"></script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -31,33 +28,24 @@
 
     <div class="card">
         <h2>Ingreso a la Nube</h2>
-        
         <div id="authForm">
             <div class="form-group">
                 <label>Correo Electrónico</label>
                 <input type="email" id="email" required placeholder="ejemplo@correo.com">
             </div>
-            
             <div class="form-group">
                 <label>Contraseña</label>
                 <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
             </div>
-            
             <div class="btn-group">
                 <button type="button" id="btnLogin" class="btn-primary" onclick="enviarDatos('login')">Iniciar Sesión</button>
                 <button type="button" id="btnRegister" class="btn-secondary" onclick="enviarDatos('registro')">Registrarse</button>
             </div>
         </div>
-
         <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        // CORRECCIÓN CRÍTICA: Inicializamos el cliente al principio absoluto del script
-        const SUPABASE_URL = "https://supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         async function enviarDatos(accion) {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -71,7 +59,7 @@
             }
 
             statusMessage.style.display = "block";
-            statusMessage.textContent = "Procesando solicitud...";
+            statusMessage.textContent = "Procesando...";
             statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
             statusMessage.style.color = "#94a3b8";
             
@@ -79,12 +67,16 @@
             btnRegister.disabled = true;
 
             try {
+                // Generamos el cliente dentro de la ejecución para evitar fallos de tiempo
+                const urlBase = "https://supabase.co"; 
+                const claveAnon = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
+                const cliente = supabase.createClient(urlBase, claveAnon);
+
                 let respuesta;
-                
                 if (accion === 'registro') {
-                    respuesta = await supabaseClient.auth.signUp({ email, password });
+                    respuesta = await cliente.auth.signUp({ email, password });
                 } else {
-                    respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
+                    respuesta = await cliente.auth.signInWithPassword({ email, password });
                 }
 
                 const { data, error } = respuesta;
@@ -99,7 +91,7 @@
                 } else {
                     statusMessage.textContent = accion === 'registro' 
                         ? "¡Éxito absoluto! Cuenta creada en Supabase." 
-                        : "¡Login correcto! Bienvenido al sistema.";
+                        : "¡Login correcto! Bienvenido.";
                     statusMessage.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
                     statusMessage.style.color = "#34d399";
                     document.getElementById('email').value = "";
@@ -108,7 +100,7 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Fallo inesperado: " + err.message;
+                statusMessage.textContent = "Error de ejecución: " + err.message;
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
             }
