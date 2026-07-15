@@ -3,17 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Depuración de Registro - Supabase</title>
+    <title>Acceso Seguro - Supabase</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; }
-        h2 { font-size: 22px; margin-bottom: 24px; color: #10b981; text-align: center; }
+        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); }
+        h2 { font-size: 22px; margin-bottom: 24px; color: #10b981; text-align: center; font-weight: 700; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; }
-        .form-group input { width: 100%; padding: 12px 16px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 14px; background-color: #10b981; color: #0f172a; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        .msg { margin-top: 20px; font-size: 14px; text-align: center; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
+        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 12px 16px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus { border-color: #10b981; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
+        .btn-primary { background-color: #10b981; color: #0f172a; }
+        .btn-primary:hover { background-color: #059669; }
+        .btn-secondary { background-color: #334155; color: #f8fafc; }
+        .btn-secondary:hover { background-color: #475569; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
         .success { display: block; background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
         .error { display: block; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
@@ -21,68 +28,97 @@
 <body>
 
     <div class="card">
-        <h2>Registro en la Nube</h2>
-        <form id="registerForm">
+        <h2 id="formTitle">Ingreso a la Nube</h2>
+        
+        <form id="authForm">
             <div class="form-group">
                 <label>Correo Electrónico</label>
                 <input type="email" id="email" required placeholder="ejemplo@correo.com">
             </div>
+            
             <div class="form-group">
                 <label>Contraseña</label>
                 <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
             </div>
-            <button type="submit" id="btnSubmit">Crear Cuenta</button>
+            
+            <div class="btn-group">
+                <!-- Botón para iniciar sesión -->
+                <button type="button" id="btnLogin" class="btn-primary">Iniciar Sesión</button>
+                <!-- Botón para registrar nueva cuenta -->
+                <button type="button" id="btnRegister" class="btn-secondary">Registrarse</button>
+            </div>
         </form>
+
         <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        const SUPABASE_AUTH_URL = "https://supabase.co"; 
+        const SUPABASE_BASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
-        const form = document.getElementById('registerForm');
         const statusMessage = document.getElementById('statusMessage');
-        const button = document.getElementById('btnSubmit');
+        const btnLogin = document.getElementById('btnLogin');
+        const btnRegister = document.getElementById('btnRegister');
 
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
+        // Función central para conectar con la API de Supabase
+        async function conectarSupabase(endpoint, email, password) {
             statusMessage.style.display = "none";
-            button.disabled = true;
-            button.textContent = "Enviando datos...";
+            btnLogin.disabled = true;
+            btnRegister.disabled = true;
 
             try {
-                const response = await fetch(SUPABASE_AUTH_URL, {
+                const response = await fetch(`${SUPABASE_BASE_URL}/${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     },
-                    body: JSON.stringify({ email: email, password: password })
+                    body: JSON.stringify({ email, password })
                 });
 
                 const result = await response.json();
-                button.disabled = false;
-                button.textContent = "Crear Cuenta";
+                btnLogin.disabled = false;
+                btnRegister.disabled = false;
 
                 if (!response.ok || result.error) {
-                    // Muestra en pantalla el objeto de error completo que envía Supabase
-                    statusMessage.textContent = "RESPUESTA DE ERROR DEL SERVIDOR:\n" + JSON.stringify(result, null, 2);
+                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de credenciales';
+                    statusMessage.textContent = "Error: " + errorMsg;
                     statusMessage.className = "msg error";
                 } else {
-                    statusMessage.textContent = "¡ÉXITO TOTAL!\nUsuario creado con ID: " + result.id;
+                    if (endpoint === 'signup') {
+                        statusMessage.textContent = "¡Registro exitoso!\nUsuario guardado en la base de datos.";
+                    } else {
+                        statusMessage.textContent = "¡Login Correcto!\nBienvenido al sistema. Token: " + result.access_token.substring(0, 15) + "...";
+                    }
                     statusMessage.className = "msg success";
-                    form.reset();
                 }
             } catch (err) {
-                button.disabled = false;
-                button.textContent = "Crear Cuenta";
-                statusMessage.textContent = "ERROR LOCAL DE RED:\n" + err.message;
+                btnLogin.disabled = false;
+                btnRegister.disabled = false;
+                statusMessage.textContent = "Error de conexión con el servidor.";
                 statusMessage.className = "msg error";
             }
+        }
+
+        // Evento al hacer clic en Iniciar Sesión (Login)
+        btnLogin.addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if(!email || !password) return alert("Rellena todos los campos");
+            
+            // Endpoint oficial de Supabase para Login
+            conectarSupabase('token?grant_type=password', email, password);
+        });
+
+        // Evento al hacer clic en Registrarse (Sign Up)
+        btnRegister.addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if(!email || !password) return alert("Rellena todos los campos");
+            
+            // Endpoint oficial de Supabase para crear usuarios
+            conectarSupabase('signup', email, password);
         });
     </script>
 </body>
