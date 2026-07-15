@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
-    
-    <!-- Cargamos la SDK oficial de Supabase -->
-    <script src="https://jsdelivr.net"></script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -24,10 +20,7 @@
         .btn-secondary { background-color: #334155; color: #f8fafc; }
         .btn-secondary:hover { background-color: #475569; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* El mensaje de estado ahora inicia visible avisando al usuario */
-        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: block; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
-        .cargando { background-color: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -44,76 +37,68 @@
                 <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
             </div>
             <div class="btn-group">
-                <!-- Iniciamos los botones desactivados por seguridad -->
-                <button type="button" id="btnLogin" class="btn-primary" disabled onclick="ejecutarAcceso('login')">Iniciar Sesión</button>
-                <button type="button" id="btnRegister" class="btn-secondary" disabled onclick="ejecutarAcceso('registro')">Registrarse</button>
+                <button type="button" id="btnLogin" class="btn-primary" onclick="procesarAcceso('login')">Iniciar Sesión</button>
+                <button type="button" id="btnRegister" class="btn-secondary" onclick="procesarAcceso('registro')">Registrarse</button>
             </div>
         </div>
-        <div id="statusMessage" class="msg cargando">Conectando con la librería de seguridad...</div>
+        <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        const statusMessage = document.getElementById('statusMessage');
-        const btnLogin = document.getElementById('btnLogin');
-        const btnRegister = document.getElementById('btnRegister');
+        const API_URL = "https://supabase.co"; 
+        const ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
-        // Control de espera: Habilitamos botones solo cuando la librería de internet esté lista
-        window.addEventListener('load', () => {
-            // Verificamos si el objeto 'supabase' ya fue inyectado por la CDN externa
-            if (typeof supabase !== 'undefined') {
-                btnLogin.disabled = false;
-                btnRegister.disabled = false;
-                statusMessage.style.display = "none"; // Ocultamos el aviso de carga inicial
-            } else {
-                statusMessage.textContent = "Error: La librería externa de Supabase fue bloqueada por tu red.";
-                statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
-                statusMessage.style.color = "#f87171";
-            }
-        });
-
-        async function ejecutarAcceso(modo) {
+        async function procesarAcceso(modo) {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const statusMessage = document.getElementById('statusMessage');
+            const btnLogin = document.getElementById('btnLogin');
+            const btnRegister = document.getElementById('btnRegister');
 
             if (!email || !password) {
                 alert("Por favor, rellena todos los campos.");
                 return;
             }
 
+            // Estado visual de carga inmediato
             statusMessage.style.display = "block";
-            statusMessage.className = "msg cargando";
-            statusMessage.textContent = "Procesando...";
+            statusMessage.textContent = "Procesando con el servidor...";
+            statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
+            statusMessage.style.color = "#94a3b8";
             
             btnLogin.disabled = true;
             btnRegister.disabled = true;
 
+            // Selección de endpoint limpia de forma nativa
+            let urlDestino = `${API_URL}/signup`;
+            if (modo === 'login') {
+                urlDestino = `${API_URL}/token?grant_type=password`;
+            }
+
             try {
-                const plataformaBase = "https://supabase.co"; 
-                const llavePublica = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
+                const response = await fetch(urlDestino, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': ANON_KEY
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const result = await response.json();
                 
-                // Creación de cliente garantizada bajo el evento verificado
-                const instanciaInstatanea = supabase.createClient(plataformaBase, llavePublica);
-
-                let peticion;
-                if (modo === 'registro') {
-                    peticion = await instanciaInstatanea.auth.signUp({ email, password });
-                } else {
-                    peticion = await instanciaInstatanea.auth.signInWithPassword({ email, password });
-                }
-
-                const { data, error } = peticion;
-
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
 
-                if (error) {
-                    statusMessage.textContent = "Error de Supabase: " + error.message;
+                if (!response.ok || result.error) {
+                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de autenticación.';
+                    statusMessage.textContent = "Respuesta: " + errorMsg;
                     statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                     statusMessage.style.color = "#f87171";
                 } else {
                     statusMessage.textContent = modo === 'registro' 
-                        ? "¡Éxito absoluto! Cuenta creada en Supabase." 
-                        : "¡Login correcto! Bienvenido.";
+                        ? "¡Éxito absoluto! Usuario guardado en Supabase." 
+                        : "¡Login correcto! Ingreso autorizado.";
                     statusMessage.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
                     statusMessage.style.color = "#34d399";
                     document.getElementById('email').value = "";
@@ -122,7 +107,7 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Error de proceso interno: " + err.message;
+                statusMessage.textContent = "Error de conexión de red local en tu Mac.";
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
             }
