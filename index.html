@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Registro Seguro - Supabase</title>
+    <!-- Cargamos la librería oficial de Supabase para evitar errores de red/fetch -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -29,7 +31,9 @@
             <div class="form-group">
                 <label>Correo Electrónico</label>
                 <input type="email" id="email" required placeholder="ejemplo@correo.com">
-            </div><div class="form-group">
+            </div>
+            
+            <div class="form-group">
                 <label>Contraseña</label>
                 <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
             </div>
@@ -41,9 +45,12 @@
     </div>
 
     <script>
-        // // ⚠️ REEMPLAZA LAS DOS LÍNEAS ORIGINALES POR ESTAS:
-const SUPABASE_URL = "https://supabase.co"; // <- Quita "/rest/v1/" del final
-const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iy";
+        // Configuración inicial limpia
+        const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iy";
+
+        // Inicializamos el cliente oficial de Supabase
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const form = document.getElementById('registerForm');
         const statusMessage = document.getElementById('statusMessage');
@@ -55,42 +62,31 @@ const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iy";
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
+            // Limpieza visual del estado
             statusMessage.className = "msg";
             statusMessage.style.display = "none";
             button.disabled = true;
-            button.textContent = "Procesando registro..."; try {
-                // Conexión nativa HTTPS directa a la nube independiente de Supabase
-                const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
-                });
+            button.textContent = "Procesando registro...";
 
-                const data = await response.json();
+            // Llamada segura usando la SDK oficial
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+            });
 
-                button.disabled = false;
-                button.textContent = "Crear Cuenta";
+            button.disabled = false;
+            button.textContent = "Crear Cuenta";
 
-                if (response.ok) {
-                    statusMessage.textContent = "¡Éxito absoluto! Cuenta creada en la nube.";
-                    statusMessage.className = "msg success";
-                    form.reset();
-                } else {
-                    statusMessage.textContent = "Error: " + (data.msg || data.error_description || "Datos inválidos");
-                    statusMessage.className = "msg error";
-                } } catch (err) {
-                button.disabled = false;
-                button.textContent = "Crear Cuenta";
-                statusMessage.textContent = "Error físico de conexión en tu red.";
+            if (error) {
+                // Si la API de Supabase responde con algún error, lo pintamos aquí
+                statusMessage.textContent = "Error: " + error.message;
                 statusMessage.className = "msg error";
-                console.error(err);
+                console.error("Detalle técnico:", error);
+            } else {
+                // Éxito en el registro
+                statusMessage.textContent = "¡Éxito absoluto! Registrado. Revisa tu panel o tu email.";
+                statusMessage.className = "msg success";
+                form.reset();
             }
         });
     </script>
