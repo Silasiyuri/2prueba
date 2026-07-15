@@ -2,25 +2,122 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prueba de Motor JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Seguro - Supabase</title>
     <style>
-        body { background-color: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
-        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; text-align: center; border: 1px solid #334155; }
-        button { padding: 14px 28px; background-color: #10b981; color: #0f172a; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); }
+        h2 { font-size: 22px; margin-bottom: 24px; color: #10b981; text-align: center; font-weight: 700; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 12px 16px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus { border-color: #10b981; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
+        .btn-primary { background-color: #10b981; color: #0f172a; }
+        .btn-primary:hover { background-color: #059669; }
+        .btn-secondary { background-color: #334155; color: #f8fafc; }
+        .btn-secondary:hover { background-color: #475569; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
     </style>
 </head>
 <body>
 
-<div class="card">
-        <h2>Control de Clic de Mac</h2>
-        <br><br>
-        <button type="button" onclick="probarBoton()">PRESIONAR AQUÍ</button>
+    <div class="card">
+        <h2>Ingreso a la Nube</h2>
+        
+        <div id="authForm">
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="email" required placeholder="ejemplo@correo.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+            </div>
+            
+            <div class="btn-group">
+                <button type="button" id="btnLogin" class="btn-primary" onclick="enviarDatos('login')">Iniciar Sesión</button>
+                <button type="button" id="btnRegister" class="btn-secondary" onclick="enviarDatos('registro')">Registrarse</button>
+            </div>
+        </div>
+
+        <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        // Esta función se ejecuta inmediatamente sin consultar a internet ni a Supabase
-        function probarBoton() {
-            alert("¡EL JAVASCRIPT EN TU MAC SÍ FUNCIONA!");
+        // Si notas lentitud o errores, asegúrate de refrescar estas dos variables desde tu panel de Supabase
+        const SUPABASE_URL = "https://supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
+
+        async function enviarDatos(accion) {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const statusMessage = document.getElementById('statusMessage');
+            const btnLogin = document.getElementById('btnLogin');
+            const btnRegister = document.getElementById('btnRegister');
+
+            if (!email || !password) {
+                alert("Por favor, rellena todos los campos.");
+                return;
+            }
+
+            // Cambiamos el estado visual inmediatamente para que veas que el botón reaccionó
+            statusMessage.style.display = "block";
+            statusMessage.textContent = "Conectando con el servidor...";
+            statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
+            statusMessage.style.color = "#94a3b8";
+            
+            btnLogin.disabled = true;
+            btnRegister.disabled = true;
+
+            let urlDestino = `${SUPABASE_URL}/signup`;
+            if (accion === 'login') {
+                urlDestino = `${SUPABASE_URL}/token?grant_type=password`;
+            }
+
+            try {
+                // Petición HTTP nativa protegida por bloques de control
+                const response = await fetch(urlDestino, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const result = await response.json();
+                
+                btnLogin.disabled = false;
+                btnRegister.disabled = false;
+
+                if (!response.ok || result.error) {
+                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de autenticación.';
+                    statusMessage.textContent = "Supabase rechazó la clave pública:\n" + errorMsg;
+                    statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+                    statusMessage.style.color = "#f87171";
+                } else {
+                    statusMessage.textContent = accion === 'registro' 
+                        ? "¡Éxito absoluto! Cuenta creada en Supabase." 
+                        : "¡Login correcto! Has ingresado de forma segura.";
+                    statusMessage.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
+                    statusMessage.style.color = "#34d399";
+                    document.getElementById('email').value = "";
+                    document.getElementById('password').value = "";
+                }
+            } catch (err) {
+                btnLogin.disabled = false;
+                btnRegister.disabled = false;
+                statusMessage.textContent = "Error físico de comunicación local de red.";
+                statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+                statusMessage.style.color = "#f87171";
+                console.error(err);
+            }
         }
     </script>
 </body>
