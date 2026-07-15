@@ -48,57 +48,60 @@
     </div>
 
     <script>
-        // Esperamos a que el HTML y la librería de Supabase carguen por completo
         window.addEventListener('DOMContentLoaded', () => {
-            
-            const SUPABASE_URL = "https://supabase.co"; 
-            const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
+    
+    const SUPABASE_URL = "https://supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
-            // Inicialización limpia usando el objeto global correcto
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            const form = document.getElementById('registerForm');
-            const statusMessage = document.getElementById('statusMessage');
-            const button = document.getElementById('btnSubmit');
+    const form = document.getElementById('registerForm');
+    const statusMessage = document.getElementById('statusMessage');
+    const button = document.getElementById('btnSubmit');
 
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-                // Reset visual inmediato
-                statusMessage.style.display = "none";
-                statusMessage.className = "msg";
-                button.disabled = true;
-                button.textContent = "Procesando registro...";
+        statusMessage.style.display = "none";
+        statusMessage.className = "msg";
+        button.disabled = true;
+        button.textContent = "Procesando registro...";
 
-                try {
-                    const { data, error } = await supabaseClient.auth.signUp({
-                        email: email,
-                        password: password,
-                    });
-
-                    button.disabled = false;
-                    button.textContent = "Crear Cuenta";
-
-                    if (error) {
-                        statusMessage.textContent = "Error: " + error.message;
-                        statusMessage.className = "msg error";
-                    } else {
-                        statusMessage.textContent = "¡Registro exitoso! Ya puedes iniciar sesión.";
-                        statusMessage.className = "msg success";
-                        form.reset();
-                    }
-                } catch (err) {
-                    button.disabled = false;
-                    button.textContent = "Crear Cuenta";
-                    statusMessage.textContent = "Error de red o conexión.";
-                    statusMessage.className = "msg error";
-                    console.error("Detalle:", err);
-                }
+        try {
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password,
             });
-        });
+
+            button.disabled = false;
+            button.textContent = "Crear Cuenta";
+
+            if (error) {
+                // Alerta de depuración para ver el error real en pantalla
+                alert("ERROR DE SUPABASE: " + error.message);
+                statusMessage.textContent = "Error: " + error.message;
+                statusMessage.className = "msg error";
+            } else {
+                // Alerta de éxito para verificar qué devolvió la base de datos
+                alert("¡ÉXITO EN EL SCRIPT! Datos del usuario creados en memoria.");
+                statusMessage.textContent = "¡Registro exitoso! Revisa tu pestaña Auth > Users.";
+                statusMessage.className = "msg success";
+                form.reset();
+            }
+        } catch (err) {
+            button.disabled = false;
+            button.textContent = "Crear Cuenta";
+            alert("Error crítico de red o de sintaxis JS.");
+            statusMessage.textContent = "Error de red o conexión.";
+            statusMessage.className = "msg error";
+            console.error("Detalle:", err);
+        }
+    });
+});
+
     </script>
 </body>
 </html>
