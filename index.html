@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
     
-    <!-- Cargamos la SDK empaquetada oficial de producción para solucionar CORS -->
+    <!-- Cargamos la SDK oficial v2 -->
     <script src="https://jsdelivr.net"></script>
     
     <style>
@@ -53,10 +53,9 @@
     </div>
 
     <script>
+        // CORRECCIÓN CRÍTICA: Inicializamos el cliente al principio absoluto del script
         const SUPABASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
-
-        // Inicialización oficial de la SDK nativa v2
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function enviarDatos(accion) {
@@ -83,10 +82,8 @@
                 let respuesta;
                 
                 if (accion === 'registro') {
-                    // Registro usando la SDK oficial
                     respuesta = await supabaseClient.auth.signUp({ email, password });
                 } else {
-                    // Login usando la SDK oficial
                     respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
                 }
 
@@ -111,7 +108,7 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Fallo de comunicación interna de la SDK: " + err.message;
+                statusMessage.textContent = "Fallo inesperado: " + err.message;
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
             }
