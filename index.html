@@ -43,15 +43,10 @@
         <div id="statusMessage" class="msg"></div>
     </div>
 
-    <!-- NOTA CLAVE: Usamos type="module" para importar Supabase de forma asíncrona y ultrarrápida -->
-    <script type="module">
-        import { createClient } from 'https://jsdelivr.net';
-
-        const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
+    <script>
+        // Endpoint limpio directo a los servidores de autenticación de Supabase
+        const SUPABASE_AUTH_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
-
-        // Inicialización modular directa
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const form = document.getElementById('registerForm');
         const statusMessage = document.getElementById('statusMessage');
@@ -69,35 +64,37 @@
             button.textContent = "Procesando registro...";
 
             try {
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password
+                // Petición HTTP nativa asíncrona sin usar la SDK pesada
+                const response = await fetch(SUPABASE_AUTH_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
                 });
 
+                const result = await response.json();
                 button.disabled = false;
                 button.textContent = "Crear Cuenta";
 
-                if (error) {
-                    statusMessage.textContent = "Error de Supabase: " + error.message;
+                if (!response.ok || result.error) {
+                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error desconocido';
+                    statusMessage.textContent = "Error de Supabase: " + errorMsg;
                     statusMessage.className = "msg error";
-                } else if (data && data.user) {
-                    // Verificación si quedó en estado pendiente o confirmado
-                    if (data.user.identities && data.user.identities.length === 0) {
-                        statusMessage.textContent = "El correo ya existe. Intenta con otro o inicia sesión.";
-                        statusMessage.className = "msg error";
-                    } else {
-                        statusMessage.textContent = "¡Registro exitoso! Usuario creado en Supabase.";
-                        statusMessage.className = "msg success";
-                        form.reset();
-                    }
                 } else {
-                    statusMessage.textContent = "La base de datos respondió sin guardar datos.";
-                    statusMessage.className = "msg error";
+                    statusMessage.textContent = "¡Éxito total! El usuario ha sido registrado directamente en Supabase.";
+                    statusMessage.className = "msg success";
+                    form.reset();
                 }
             } catch (err) {
                 button.disabled = false;
                 button.textContent = "Crear Cuenta";
-                statusMessage.textContent = "Excepción crítica: " + err.message;
+                statusMessage.textContent = "Error de conexión: No se pudo contactar a Supabase. Revisa tu internet o bloqueadores.";
                 statusMessage.className = "msg error";
                 console.error(err);
             }
