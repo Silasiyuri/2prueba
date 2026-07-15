@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
+    
+    <!-- Cargamos la SDK empaquetada oficial de producción para solucionar CORS -->
+    <script src="https://jsdelivr.net"></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -52,6 +56,9 @@
         const SUPABASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
+        // Inicialización oficial de la SDK nativa v2
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         async function enviarDatos(accion) {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -65,44 +72,37 @@
             }
 
             statusMessage.style.display = "block";
-            statusMessage.textContent = "Conectando...";
+            statusMessage.textContent = "Procesando solicitud...";
             statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
             statusMessage.style.color = "#94a3b8";
             
             btnLogin.disabled = true;
             btnRegister.disabled = true;
 
-            let urlDestino = `${SUPABASE_URL}/signup`;
-            if (accion === 'login') {
-                urlDestino = `${SUPABASE_URL}/token?grant_type=password`;
-            }
-
             try {
-                const response = await fetch(urlDestino, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // CORRECCIÓN DEFINITIVA: La clave sb_publishable SOLO va en apikey
-                        // No debe existir la cabecera 'Authorization' con un string sb_
-                        'apikey': SUPABASE_ANON_KEY
-                    },
-                    body: JSON.stringify({ email: email, password: password })
-                });
-
-                const result = await response.json();
+                let respuesta;
                 
+                if (accion === 'registro') {
+                    // Registro usando la SDK oficial
+                    respuesta = await supabaseClient.auth.signUp({ email, password });
+                } else {
+                    // Login usando la SDK oficial
+                    respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
+                }
+
+                const { data, error } = respuesta;
+
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
 
-                if (!response.ok || result.error) {
-                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de autenticación.';
-                    statusMessage.textContent = "Error: " + errorMsg;
+                if (error) {
+                    statusMessage.textContent = "Error de Supabase: " + error.message;
                     statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                     statusMessage.style.color = "#f87171";
                 } else {
                     statusMessage.textContent = accion === 'registro' 
                         ? "¡Éxito absoluto! Cuenta creada en Supabase." 
-                        : "¡Login correcto! Has ingresado de forma segura.";
+                        : "¡Login correcto! Bienvenido al sistema.";
                     statusMessage.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
                     statusMessage.style.color = "#34d399";
                     document.getElementById('email').value = "";
@@ -111,7 +111,7 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Error local al intentar conectar de manera externa.";
+                statusMessage.textContent = "Fallo de comunicación interna de la SDK: " + err.message;
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
             }
