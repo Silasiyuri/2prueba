@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
+    
+    <!-- Cargamos la SDK oficial empaquetada que resuelve los bloqueos CORS de GitHub automáticamente -->
+    <script src="https://jsdelivr.net"></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -37,19 +41,27 @@
                 <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
             </div>
             <div class="btn-group">
-                <button type="button" id="btnLogin" class="btn-primary" onclick="comunicarServidor('login')">Iniciar Sesión</button>
-                <button type="button" id="btnRegister" class="btn-secondary" onclick="comunicarServidor('registro')">Registrarse</button>
+                <button type="button" id="btnLogin" class="btn-primary" onclick="conectarServidor('login')">Iniciar Sesión</button>
+                <button type="button" id="btnRegister" class="btn-secondary" onclick="conectarServidor('registro')">Registrarse</button>
             </div>
         </div>
         <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        // Tus rutas y claves de acceso actualizadas
-        const RUTA_AUTH = "https://supabase.co"; 
+        // Tu URL real limpia de subrutas y tu nueva API Key
+        const NUEVA_URL = "https://supabase.co"; 
         const NUEVA_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
 
-        async function comunicarServidor(modo) {
+        // Inicialización oficial de la SDK desactivando almacenamiento local para evitar bloqueos en Mac
+        const supabaseClient = supabase.createClient(NUEVA_URL, NUEVA_KEY, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false
+            }
+        });
+
+        async function conectarServidor(modo) {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const statusMessage = document.getElementById('statusMessage');
@@ -62,37 +74,28 @@
             }
 
             statusMessage.style.display = "block";
-            statusMessage.textContent = "Procesando...";
+            statusMessage.textContent = "Validando acceso...";
             statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
             statusMessage.style.color = "#94a3b8";
             
             btnLogin.disabled = true;
             btnRegister.disabled = true;
 
-            let urlFinal = `${RUTA_AUTH}/signup`;
-            if (modo === 'login') {
-                urlFinal = `${RUTA_AUTH}/token?grant_type=password`;
-            }
-
             try {
-                const response = await fetch(urlFinal, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // AJUSTE CRÍTICO: 'apiKey' con K mayúscula y sin cabecera Authorization
-                        'apiKey': NUEVA_KEY
-                    },
-                    body: JSON.stringify({ email: email, password: password })
-                });
+                let respuesta;
+                if (modo === 'registro') {
+                    respuesta = await supabaseClient.auth.signUp({ email, password });
+                } else {
+                    respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
+                }
 
-                const result = await response.json();
-                
+                const { data, error } = respuesta;
+
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
 
-                if (!response.ok || result.error) {
-                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de autenticación.';
-                    statusMessage.textContent = "Servidor dice: " + errorMsg;
+                if (error) {
+                    statusMessage.textContent = "Error de Supabase: " + error.message;
                     statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                     statusMessage.style.color = "#f87171";
                 } else {
@@ -107,7 +110,7 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Error: El navegador no pudo enviar los datos. Revisa la caché.";
+                statusMessage.textContent = "Fallo técnico interno: " + err.message;
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
             }
