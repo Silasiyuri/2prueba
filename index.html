@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Registro Seguro - Supabase</title>
     
-    <!-- CDN ultra rápida de unpkg con 'defer' para que la página cargue al instante -->
-    <script src="https://unpkg.com" defer></script>
+    <!-- CDN de Supabase cargado correctamente -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
@@ -48,60 +48,56 @@
     </div>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-    
-    const SUPABASE_URL = "https://supabase.com"; 
-    const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
+        // CORRECCIÓN CLAVE: Desestructurar la función global de la CDN
+        const { createClient } = supabase;
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
-    const form = document.getElementById('registerForm');
-    const statusMessage = document.getElementById('statusMessage');
-    const button = document.getElementById('btnSubmit');
+        // Inicialización nativa del cliente
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
+        const form = document.getElementById('registerForm');
+        const statusMessage = document.getElementById('statusMessage');
+        const button = document.getElementById('btnSubmit');
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        statusMessage.style.display = "none";
-        statusMessage.className = "msg";
-        button.disabled = true;
-        button.textContent = "Procesando registro...";
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        try {
-            const { data, error } = await supabaseClient.auth.signUp({
-                email: email,
-                password: password,
-            });
+            statusMessage.style.display = "none";
+            statusMessage.className = "msg";
+            button.disabled = true;
+            button.textContent = "Procesando registro...";
 
-            button.disabled = false;
-            button.textContent = "Crear Cuenta";
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                });
 
-            if (error) {
-                // Alerta de depuración para ver el error real en pantalla
-                alert("ERROR DE SUPABASE: " + error.message);
-                statusMessage.textContent = "Error: " + error.message;
+                button.disabled = false;
+                button.textContent = "Crear Cuenta";
+
+                if (error) {
+                    statusMessage.textContent = "Error de Supabase: " + error.message;
+                    statusMessage.className = "msg error";
+                    console.error("Detalle del Error:", error);
+                } else {
+                    statusMessage.textContent = "¡Registro exitoso! Usuario creado en la base de datos.";
+                    statusMessage.className = "msg success";
+                    form.reset();
+                }
+            } catch (err) {
+                button.disabled = false;
+                button.textContent = "Crear Cuenta";
+                statusMessage.textContent = "Error técnico de ejecución local.";
                 statusMessage.className = "msg error";
-            } else {
-                // Alerta de éxito para verificar qué devolvió la base de datos
-                alert("¡ÉXITO EN EL SCRIPT! Datos del usuario creados en memoria.");
-                statusMessage.textContent = "¡Registro exitoso! Revisa tu pestaña Auth > Users.";
-                statusMessage.className = "msg success";
-                form.reset();
+                console.error("Excepción:", err);
             }
-        } catch (err) {
-            button.disabled = false;
-            button.textContent = "Crear Cuenta";
-            alert("Error crítico de red o de sintaxis JS.");
-            statusMessage.textContent = "Error de red o conexión.";
-            statusMessage.className = "msg error";
-            console.error("Detalle:", err);
-        }
-    });
-});
-
+        });
     </script>
 </body>
 </html>
