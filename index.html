@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Seguro - Supabase</title>
+    <title>Acceso Instantáneo - Supabase</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -51,20 +51,9 @@
         <div id="statusMessage" class="msg hidden"></div>
     </div>
 
-    <!-- Forzamos la carga modular nativa autorizada por los navegadores modernos de Mac -->
-    <script type="module">
-        import { createClient } from 'https://jsdelivr.net';
-
-        const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
+    <script>
+        const SUPABASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
-
-        // Inicializamos la SDK nativa con persistencia local desactivada para evitar bloqueos del sistema de cookies de Mac
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: {
-                persistSession: false,
-                autoRefreshToken: false
-            }
-        });
 
         const form = document.getElementById('authForm');
         const statusMessage = document.getElementById('statusMessage');
@@ -74,6 +63,7 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            // Detectamos instantáneamente qué botón se pulsó
             const botonPresionado = document.activeElement ? document.activeElement.value : 'login';
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -81,32 +71,40 @@
             statusMessage.className = "msg hidden";
             btnLogin.disabled = true;
             btnRegister.disabled = true;
+            
+            // Ajustamos la ruta según la acción
+            let urlDestino = `${SUPABASE_URL}/signup`;
+            if (botonPresionado === 'login') {
+                urlDestino = `${SUPABASE_URL}/token?grant_type=password`;
+            }
 
             try {
-                let respuesta;
+                // Petición directa por HTTP nativo para evitar lentitud de librerías
+                const response = await fetch(urlDestino, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const result = await response.json();
                 
-                if (botonPresionado === 'signup') {
-                    // Acción de Registro Oficial
-                    respuesta = await supabaseClient.auth.signUp({ email, password });
-                } else {
-                    // Acción de Login Oficial
-                    respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
-                }
-
-                const { data, error } = respuesta;
-
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
                 statusMessage.classList.remove('hidden');
 
-                if (error) {
-                    statusMessage.textContent = "Error de Supabase: " + error.message;
+                if (!response.ok || result.error) {
+                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de credenciales.';
+                    statusMessage.textContent = "Servidor dice:\n" + errorMsg;
                     statusMessage.className = "msg error";
-                } else if (data) {
+                } else {
                     if (botonPresionado === 'signup') {
-                        statusMessage.textContent = "¡Registro Exitoso!\nUsuario enviado de forma segura a Supabase.";
+                        statusMessage.textContent = "¡Registro Exitoso!\nUsuario guardado.";
                     } else {
-                        statusMessage.textContent = "¡Login Correcto!\nConexión establecida con éxito.";
+                        statusMessage.textContent = "¡Login Correcto!\nHas ingresado de manera segura.";
                     }
                     statusMessage.className = "msg success";
                     form.reset();
@@ -115,7 +113,7 @@
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
                 statusMessage.classList.remove('hidden');
-                statusMessage.textContent = "Excepción de Red Local: " + err.message;
+                statusMessage.textContent = "Tu red/antivirus bloqueó la conexión a Supabase.";
                 statusMessage.className = "msg error";
             }
         });
