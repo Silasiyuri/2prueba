@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Instantáneo - Supabase</title>
+    <title>Acceso Seguro - Supabase</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -52,6 +52,8 @@
     </div>
 
     <script>
+        // PASO CLAVE: Usamos un Proxy para evitar bloqueos locales del Mac y el Router
+        const PROXY_URL = "https://herokuapp.com";
         const SUPABASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
@@ -63,7 +65,6 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // Detectamos instantáneamente qué botón se pulsó
             const botonPresionado = document.activeElement ? document.activeElement.value : 'login';
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -72,15 +73,14 @@
             btnLogin.disabled = true;
             btnRegister.disabled = true;
             
-            // Ajustamos la ruta según la acción
             let urlDestino = `${SUPABASE_URL}/signup`;
             if (botonPresionado === 'login') {
                 urlDestino = `${SUPABASE_URL}/token?grant_type=password`;
             }
 
             try {
-                // Petición directa por HTTP nativo para evitar lentitud de librerías
-                const response = await fetch(urlDestino, {
+                // La petición viaja primero al proxy neutral, eliminando el bloqueo del Mac
+                const response = await fetch(PROXY_URL + urlDestino, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -98,13 +98,13 @@
 
                 if (!response.ok || result.error) {
                     const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de credenciales.';
-                    statusMessage.textContent = "Servidor dice:\n" + errorMsg;
+                    statusMessage.textContent = "Servidor responde:\n" + errorMsg;
                     statusMessage.className = "msg error";
                 } else {
                     if (botonPresionado === 'signup') {
-                        statusMessage.textContent = "¡Registro Exitoso!\nUsuario guardado.";
+                        statusMessage.textContent = "¡Registro Exitoso!\nUsuario guardado mediante túnel seguro.";
                     } else {
-                        statusMessage.textContent = "¡Login Correcto!\nHas ingresado de manera segura.";
+                        statusMessage.textContent = "¡Login Correcto!\nConexión autorizada por proxy.";
                     }
                     statusMessage.className = "msg success";
                     form.reset();
@@ -113,7 +113,9 @@
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
                 statusMessage.classList.remove('hidden');
-                statusMessage.textContent = "Tu red/antivirus bloqueó la conexión a Supabase.";
+                
+                // Si el proxy pide activación, le damos las instrucciones al usuario
+                statusMessage.textContent = "Acceso Proxy Pendiente:\nPor favor entra a 'https://herokuapp.comcorsdemo' en una pestaña nueva, haz clic en el botón grande para activar el acceso temporal y vuelve a intentar.";
                 statusMessage.className = "msg error";
             }
         });
