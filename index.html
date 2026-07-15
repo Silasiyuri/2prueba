@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
     
-    <!-- SDK oficial de producción unificada (Evita errores CORS y gestiona la clave sb_publishable) -->
+    <!-- SDK oficial de producción unificada -->
     <script src="https://jsdelivr.net"></script>
     
     <style>
@@ -49,12 +49,11 @@
     </div>
 
     <script>
-        const PROYECTO_URL = "https://sxccozwujfinramrczql.supabase.co";
-        // Tu nueva clave pública inyectada correctamente bajo el constructor SDK
+        const PROYECTO_URL = "https://supabase.co";
         const CLAVE_PUBLICA = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
 
-        // Inicialización nativa aislada sin almacenamiento para evitar conflictos de cookies en Safari de Mac
-        const supabaseClient = supabase.createClient(PROYECTO_URL, CLAVE_PUBLICA, {
+        // Cambio total de nombre de la variable para destruir el rastro de la caché vieja
+        const clienteActivo = supabase.createClient(PROYECTO_URL, CLAVE_PUBLICA, {
             auth: {
                 persistSession: false,
                 autoRefreshToken: false
@@ -85,11 +84,9 @@
                 let respuesta;
                 
                 if (accion === 'registro') {
-                    // LLamada limpia delegada a la SDK v2
-                    respuesta = await supabaseClient.auth.signUp({ email, password });
+                    respuesta = await clienteActivo.auth.signUp({ email, password });
                 } else {
-                    // LLamada limpia delegada a la SDK v2
-                    respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
+                    respuesta = await clienteActivo.auth.signInWithPassword({ email, password });
                 }
 
                 const { data, error } = respuesta;
