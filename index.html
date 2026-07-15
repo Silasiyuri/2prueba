@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
-    
-    <!-- SDK oficial de producción unificada -->
-    <script src="https://jsdelivr.net"></script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -41,26 +37,19 @@
                 <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
             </div>
             <div class="btn-group">
-                <button type="button" id="btnLogin" class="btn-primary" onclick="conectar('login')">Iniciar Sesión</button>
-                <button type="button" id="btnRegister" class="btn-secondary" onclick="conectar('registro')">Registrarse</button>
+                <button type="button" id="btnLogin" class="btn-primary" onclick="comunicarServidor('login')">Iniciar Sesión</button>
+                <button type="button" id="btnRegister" class="btn-secondary" onclick="comunicarServidor('registro')">Registrarse</button>
             </div>
         </div>
         <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        const PROYECTO_URL = "https://supabase.co";
-        const CLAVE_PUBLICA = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
+        // CORRECCIÓN MÁXIMA: URL oficial de autenticación de tu nuevo proyecto real
+        const RUTA_AUTH = "https://supabase.co"; 
+        const NUEVA_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
 
-        // Cambio total de nombre de la variable para destruir el rastro de la caché vieja
-        const clienteActivo = supabase.createClient(PROYECTO_URL, CLAVE_PUBLICA, {
-            auth: {
-                persistSession: false,
-                autoRefreshToken: false
-            }
-        });
-
-        async function conectar(accion) {
+        async function comunicarServidor(modo) {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const statusMessage = document.getElementById('statusMessage');
@@ -73,35 +62,43 @@
             }
 
             statusMessage.style.display = "block";
-            statusMessage.textContent = "Validando credenciales...";
+            statusMessage.textContent = "Procesando...";
             statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
             statusMessage.style.color = "#94a3b8";
             
             btnLogin.disabled = true;
             btnRegister.disabled = true;
 
+            let urlFinal = `${RUTA_AUTH}/signup`;
+            if (modo === 'login') {
+                urlFinal = `${RUTA_AUTH}/token?grant_type=password`;
+            }
+
             try {
-                let respuesta;
+                const response = await fetch(urlFinal, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': NUEVA_KEY,
+                        'Authorization': `Bearer ${NUEVA_KEY}`
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const result = await response.json();
                 
-                if (accion === 'registro') {
-                    respuesta = await clienteActivo.auth.signUp({ email, password });
-                } else {
-                    respuesta = await clienteActivo.auth.signInWithPassword({ email, password });
-                }
-
-                const { data, error } = respuesta;
-
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
 
-                if (error) {
-                    statusMessage.textContent = "Error de Supabase: " + error.message;
+                if (!response.ok || result.error) {
+                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de autenticación.';
+                    statusMessage.textContent = "Servidor dice: " + errorMsg;
                     statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                     statusMessage.style.color = "#f87171";
-                } else if (data && data.user) {
-                    statusMessage.textContent = accion === 'registro' 
+                } else {
+                    statusMessage.textContent = modo === 'registro' 
                         ? "¡Éxito absoluto! Cuenta creada en Supabase." 
-                        : "¡Login correcto! Has ingresado con éxito.";
+                        : "¡Login correcto! Bienvenido.";
                     statusMessage.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
                     statusMessage.style.color = "#34d399";
                     document.getElementById('email').value = "";
@@ -110,7 +107,7 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Fallo de ejecución local en Mac: " + err.message;
+                statusMessage.textContent = "Error: Comprueba la conexión o la caché del navegador.";
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
             }
