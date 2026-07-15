@@ -51,11 +51,20 @@
         <div id="statusMessage" class="msg hidden"></div>
     </div>
 
-    <script>
-        const SUPABASE_BASE_URL = "https://supabase.co"; 
-        
-        // REVISIÓN CLAVE: Si sigue fallando 'Failed to fetch', verifica en tu panel si esta clave no cambió.
+    <!-- Forzamos la carga modular nativa autorizada por los navegadores modernos de Mac -->
+    <script type="module">
+        import { createClient } from 'https://jsdelivr.net';
+
+        const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
+
+        // Inicializamos la SDK nativa con persistencia local desactivada para evitar bloqueos del sistema de cookies de Mac
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false
+            }
+        });
 
         const form = document.getElementById('authForm');
         const statusMessage = document.getElementById('statusMessage');
@@ -65,46 +74,39 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-           const botonPresionado = document.activeElement ? document.activeElement.value : 'login';
+            const botonPresionado = document.activeElement ? document.activeElement.value : 'login';
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             statusMessage.className = "msg hidden";
             btnLogin.disabled = true;
             btnRegister.disabled = true;
-            
-            let endpoint = 'signup';
-            if (botonPresionado === 'login') {
-                endpoint = 'token?grant_type=password';
-            }
 
             try {
-                const response = await fetch(`${SUPABASE_BASE_URL}/${endpoint}`, {
-                    method: 'POST',
-                    mode: 'cors', // Forzamos modo CORS seguro
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    },
-                    body: JSON.stringify({ email: email, password: password })
-                });
-
-                const result = await response.json();
+                let respuesta;
                 
+                if (botonPresionado === 'signup') {
+                    // Acción de Registro Oficial
+                    respuesta = await supabaseClient.auth.signUp({ email, password });
+                } else {
+                    // Acción de Login Oficial
+                    respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
+                }
+
+                const { data, error } = respuesta;
+
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
                 statusMessage.classList.remove('hidden');
 
-                if (!response.ok || result.error) {
-                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de credenciales.';
-                    statusMessage.textContent = "Respuesta de Supabase:\n" + errorMsg;
+                if (error) {
+                    statusMessage.textContent = "Error de Supabase: " + error.message;
                     statusMessage.className = "msg error";
-                } else {
+                } else if (data) {
                     if (botonPresionado === 'signup') {
-                        statusMessage.textContent = "¡Registro Exitoso!\nUsuario creado correctamente en Supabase.";
+                        statusMessage.textContent = "¡Registro Exitoso!\nUsuario enviado de forma segura a Supabase.";
                     } else {
-                        statusMessage.textContent = "¡Login Correcto!\nHas ingresado de manera segura.";
+                        statusMessage.textContent = "¡Login Correcto!\nConexión establecida con éxito.";
                     }
                     statusMessage.className = "msg success";
                     form.reset();
@@ -113,7 +115,7 @@
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
                 statusMessage.classList.remove('hidden');
-                statusMessage.textContent = "Error de Red en GitHub Mac:\nEl navegador bloqueó la salida. Intenta con una pestaña privada.";
+                statusMessage.textContent = "Excepción de Red Local: " + err.message;
                 statusMessage.className = "msg error";
             }
         });
