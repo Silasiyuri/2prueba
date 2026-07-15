@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro Seguro - Supabase</title>
+    <title>Sistema de Acceso Seguro - Supabase</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -15,18 +15,27 @@
         .form-group input:focus { border-color: #10b981; }
         button { width: 100%; padding: 14px; background-color: #10b981; color: #0f172a; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
         button:hover { background-color: #059669; }
+        button:disabled { background-color: #334155; color: #64748b; cursor: not-allowed; }
         .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; }
         .success { display: block; background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
         .error { display: block; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .toggle-container { margin-top: 20px; text-align: center; font-size: 14px; color: #94a3b8; }
+        .toggle-link { color: #10b981; text-decoration: none; font-weight: 600; cursor: pointer; }
+        .toggle-link:hover { text-decoration: underline; }
+        .welcome-panel { text-align: center; }
+        .welcome-panel p { margin-bottom: 20px; color: #94a3b8; }
+        .logout-btn { background-color: #ef4444; color: #fff; }
+        .logout-btn:hover { background-color: #dc2626; }
     </style>
 </head>
 <body>
 
-    
-    <div class="card">
-        <h2>Registro en la Nube</h2>
+    <div class="card" id="authCard">
+        <!-- Título Dinámico -->
+        <h2 id="formTitle">Iniciar Sesión</h2>
         
-        <form id="registerForm">
+        <!-- Formulario Único Inteligente -->
+        <form id="authForm">
             <div class="form-group">
                 <label>Correo Electrónico</label>
                 <input type="email" id="email" required placeholder="ejemplo@correo.com">
@@ -37,69 +46,150 @@
                 <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
             </div>
             
-            <button type="submit" id="btnSubmit">Crear Cuenta</button>
+            <button type="submit" id="btnSubmit">Ingresar</button>
         </form>
 
+        <!-- Mensajes de Respuesta -->
         <div id="statusMessage" class="msg"></div>
+
+        <!-- Conmutador de Modo -->
+        <div class="toggle-container" id="toggleContainer">
+            <span id="toggleText">¿No tienes cuenta?</span> 
+            <span class="toggle-link" id="toggleLink">Regístrate aquí</span>
+        </div>
     </div>
 
-    <script>
-    // URL base limpia y clave provista por el usuario
-    const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
+<script>
+    // Configuración de Supabase
+    const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iy";
 
-    const form = document.getElementById('registerForm');
+    // Elementos del DOM
+    const authCard = document.getElementById('authCard');
+    const authForm = document.getElementById('authForm');
+    const formTitle = document.getElementById('formTitle');
+    const btnSubmit = document.getElementById('btnSubmit');
     const statusMessage = document.getElementById('statusMessage');
-    const button = document.getElementById('btnSubmit');
+    const toggleContainer = document.getElementById('toggleContainer');
+    const toggleText = document.getElementById('toggleText');
+    const toggleLink = document.getElementById('toggleLink');
 
-    form.addEventListener('submit', async function(e) {
+    // Estado de la aplicación: 'login' o 'signup'
+    let currentMode = 'login';
+
+    // 1. Manejo del cambio de Modo (Login / Registro)
+    toggleLink.addEventListener('click', () => {
+        hideMessage();
+        authForm.reset();
+        
+        if (currentMode === 'login') {
+            currentMode = 'signup';
+            formTitle.textContent = "Crear Cuenta";
+            btnSubmit.textContent = "Registrarse";
+            toggleText.textContent = "¿Ya tienes cuenta?";
+            toggleLink.textContent = "Inicia sesión";
+        } else {
+            currentMode = 'login';
+            formTitle.textContent = "Iniciar Sesión";
+            btnSubmit.textContent = "Ingresar";
+            toggleText.textContent = "¿No tienes cuenta?";
+            toggleLink.textContent = "Regístrate aquí";
+        }
+    });
+
+    // 2. Escucha del Envío del Formulario
+    authForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-
+        
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
 
-        // Resetear estado del formulario
-        statusMessage.className = "msg";
-        statusMessage.style.display = "none";
-        button.disabled = true;
-        button.textContent = "Procesando registro...";
+        // UI en estado de carga
+        hideMessage();
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = currentMode === 'login' ? "Autenticando..." : "Registrando...";
+
+        // Definición de Endpoints según el modo de operación
+        const endpoint = currentMode === 'login' 
+            ? `${SUPABASE_URL}/auth/v1/token?grant_type=password` 
+            : `${SUPABASE_URL}/auth/v1/signup`;
 
         try {
-            // Petición HTTP directa al endpoint nativo de autenticación de Supabase
-            const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'apikey': SUPABASE_ANON_KEY,
                     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                 },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
+                body: JSON.stringify({ email, password })
             });
 
             const data = await response.json();
-
-            button.disabled = false;
-            button.textContent = "Crear Cuenta";
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = currentMode === 'login' ? "Ingresar" : "Registrarse";
 
             if (response.ok) {
-                statusMessage.textContent = "¡Éxito absoluto! Cuenta creada en la nube.";
-                statusMessage.className = "msg success";
-                form.reset();
+                if (currentMode === 'login') {
+                    // Guardar JWT de sesión de forma persistente
+                    localStorage.setItem('supabase_session', JSON.stringify(data));
+                    showMessage("¡Acceso concedido! Iniciando sesión...", "success");
+                    setTimeout(renderDashboard, 1000);
+                } else {
+                    showMessage("¡Registro exitoso! Ya puedes iniciar sesión.", "success");
+                    // Cambiar automáticamente a modo login para comodidad del usuario
+                    toggleLink.click();
+                }
             } else {
-                // Muestra el motivo exacto enviado por la API de Supabase
-                statusMessage.textContent = "Error: " + (data.message || data.error_description || "Datos inválidos");
-                statusMessage.className = "msg error";
+                // Manejo detallado de errores nativos de la API
+                const errorMsg = data.error_description || data.message || "Operación fallida";
+                showMessage(`Error: ${errorMsg}`, "error");
             }
 
         } catch (err) {
-            button.disabled = false;
-            button.textContent = "Crear Cuenta";
-            statusMessage.textContent = "Error físico de conexión en tu red o bloqueo CORS.";
-            statusMessage.className = "msg error";
-            console.error("Detalle del error:", err);
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = currentMode === 'login' ? "Ingresar" : "Registrarse";
+            showMessage("Error físico de red o bloqueo de CORS.", "error");
+            console.error(err);
+        }
+    });
+
+    // 3. Funciones de Utilidad de UI
+    function showMessage(text, type) {
+        statusMessage.textContent = text;
+        statusMessage.className = `msg ${type}`;
+    }
+
+    function hideMessage() {
+        statusMessage.style.display = "none";
+        statusMessage.className = "msg";
+    }
+
+    // 4. Renderizado de Panel de Usuario Autenticado
+    function renderDashboard() {
+        const session = JSON.parse(localStorage.getItem('supabase_session'));
+        if (!session) return;
+
+        const userEmail = session.user?.email || "Usuario";
+
+        authCard.innerHTML = `
+            <div class="welcome-panel">
+                <h2>¡Bienvenido al Sistema!</h2>
+                <p>Sesión activa como:<br><strong>${userEmail}</strong></p>
+                <button class="logout-btn" id="btnLogout">Cerrar Sesión</button>
+            </div>
+        `;
+
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            localStorage.removeItem('supabase_session');
+            window.location.reload(); // Recarga para volver al estado de login limpio
+        });
+    }
+
+    // 5. Verificación de sesión persistente al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('supabase_session')) {
+            renderDashboard();
         }
     });
 </script>
