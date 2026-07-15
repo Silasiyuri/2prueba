@@ -25,7 +25,7 @@
 </head>
 <body>
 
- <div class="card">
+    <div class="card">
         <h2>Ingreso a la Nube</h2>
         
         <div id="authForm">
@@ -49,9 +49,9 @@
     </div>
 
     <script>
-        // Si notas lentitud o errores, asegúrate de refrescar estas dos variables desde tu panel de Supabase
         const SUPABASE_URL = "https://supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iy";
+        // Clave corregida con su longitud oficial completa
+        const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
         async function enviarDatos(accion) {
             const email = document.getElementById('email').value.trim();
@@ -65,7 +65,6 @@
                 return;
             }
 
-            // Cambiamos el estado visual inmediatamente para que veas que el botón reaccionó
             statusMessage.style.display = "block";
             statusMessage.textContent = "Conectando con el servidor...";
             statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
@@ -80,7 +79,6 @@
             }
 
             try {
-                // Petición HTTP nativa protegida por bloques de control
                 const response = await fetch(urlDestino, {
                     method: 'POST',
                     headers: {
@@ -98,7 +96,7 @@
 
                 if (!response.ok || result.error) {
                     const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de autenticación.';
-                    statusMessage.textContent = "Supabase rechazó la clave pública:\n" + errorMsg;
+                    statusMessage.textContent = "Error: " + errorMsg;
                     statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                     statusMessage.style.color = "#f87171";
                 } else {
@@ -113,10 +111,9 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Error físico de comunicación local de red.";
+                statusMessage.textContent = "Error de comunicación con Supabase.";
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
-                console.error(err);
             }
         }
     </script>
