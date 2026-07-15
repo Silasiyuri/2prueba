@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Registro Seguro - Supabase</title>
-    <!-- Cargamos la librería oficial de Supabase para evitar errores de red/fetch -->
-    <script src="https://jsdelivr.net"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -17,7 +15,8 @@
         .form-group input:focus { border-color: #10b981; }
         button { width: 100%; padding: 14px; background-color: #10b981; color: #0f172a; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
         button:hover { background-color: #059669; }
-        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; }
+        button:disabled { background-color: #334155; color: #94a3b8; cursor: not-allowed; }
+        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
         .success { display: block; background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
         .error { display: block; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
@@ -44,13 +43,15 @@
         <div id="statusMessage" class="msg"></div>
     </div>
 
-    <script>
-        // Configuración inicial limpia
-        const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iy";
+    <!-- NOTA CLAVE: Usamos type="module" para importar Supabase de forma asíncrona y ultrarrápida -->
+    <script type="module">
+        import { createClient } from 'https://jsdelivr.net';
 
-        // Inicializamos el cliente oficial de Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
+
+        // Inicialización modular directa
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const form = document.getElementById('registerForm');
         const statusMessage = document.getElementById('statusMessage');
@@ -62,31 +63,43 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Limpieza visual del estado
-            statusMessage.className = "msg";
             statusMessage.style.display = "none";
+            statusMessage.className = "msg";
             button.disabled = true;
             button.textContent = "Procesando registro...";
 
-            // Llamada segura usando la SDK oficial
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-            });
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password
+                });
 
-            button.disabled = false;
-            button.textContent = "Crear Cuenta";
+                button.disabled = false;
+                button.textContent = "Crear Cuenta";
 
-            if (error) {
-                // Si la API de Supabase responde con algún error, lo pintamos aquí
-                statusMessage.textContent = "Error: " + error.message;
+                if (error) {
+                    statusMessage.textContent = "Error de Supabase: " + error.message;
+                    statusMessage.className = "msg error";
+                } else if (data && data.user) {
+                    // Verificación si quedó en estado pendiente o confirmado
+                    if (data.user.identities && data.user.identities.length === 0) {
+                        statusMessage.textContent = "El correo ya existe. Intenta con otro o inicia sesión.";
+                        statusMessage.className = "msg error";
+                    } else {
+                        statusMessage.textContent = "¡Registro exitoso! Usuario creado en Supabase.";
+                        statusMessage.className = "msg success";
+                        form.reset();
+                    }
+                } else {
+                    statusMessage.textContent = "La base de datos respondió sin guardar datos.";
+                    statusMessage.className = "msg error";
+                }
+            } catch (err) {
+                button.disabled = false;
+                button.textContent = "Crear Cuenta";
+                statusMessage.textContent = "Excepción crítica: " + err.message;
                 statusMessage.className = "msg error";
-                console.error("Detalle técnico:", error);
-            } else {
-                // Éxito en el registro
-                statusMessage.textContent = "¡Éxito absoluto! Registrado. Revisa tu panel o tu email.";
-                statusMessage.className = "msg success";
-                form.reset();
+                console.error(err);
             }
         });
     </script>
