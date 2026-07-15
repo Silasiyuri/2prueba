@@ -44,7 +44,6 @@
     </div>
 
     <script>
-        // Endpoint limpio directo a los servidores de autenticación de Supabase
         const SUPABASE_AUTH_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
@@ -64,7 +63,6 @@
             button.textContent = "Procesando registro...";
 
             try {
-                // Petición HTTP nativa asíncrona sin usar la SDK pesada
                 const response = await fetch(SUPABASE_AUTH_URL, {
                     method: 'POST',
                     headers: {
@@ -74,7 +72,12 @@
                     },
                     body: JSON.stringify({
                         email: email,
-                        password: password
+                        password: password,
+                        // Añadimos metadatos vacíos para satisfacer esquemas estrictos de bases de datos
+                        options: {
+                            data: {},
+                            redirectTo: window.location.href
+                        }
                     })
                 });
 
@@ -83,20 +86,20 @@
                 button.textContent = "Crear Cuenta";
 
                 if (!response.ok || result.error) {
-                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error desconocido';
+                    // Extraemos el mensaje de error real devuelto por la API de Supabase
+                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || JSON.stringify(result);
                     statusMessage.textContent = "Error de Supabase: " + errorMsg;
                     statusMessage.className = "msg error";
                 } else {
-                    statusMessage.textContent = "¡Éxito total! El usuario ha sido registrado directamente en Supabase.";
+                    statusMessage.textContent = "¡Éxito de procesamiento! Revisa tu lista de usuarios.";
                     statusMessage.className = "msg success";
                     form.reset();
                 }
             } catch (err) {
                 button.disabled = false;
                 button.textContent = "Crear Cuenta";
-                statusMessage.textContent = "Error de conexión: No se pudo contactar a Supabase. Revisa tu internet o bloqueadores.";
+                statusMessage.textContent = "Error de Red: No hay respuesta del servidor remoto.";
                 statusMessage.className = "msg error";
-                console.error(err);
             }
         });
     </script>
