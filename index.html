@@ -53,6 +53,8 @@
 
     <script>
         const SUPABASE_BASE_URL = "https://supabase.co"; 
+        
+        // REVISIÓN CLAVE: Si sigue fallando 'Failed to fetch', verifica en tu panel si esta clave no cambió.
         const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iyesta";
 
         const form = document.getElementById('authForm');
@@ -79,11 +81,11 @@
             try {
                 const response = await fetch(`${SUPABASE_BASE_URL}/${endpoint}`, {
                     method: 'POST',
+                    mode: 'cors', // Forzamos modo CORS seguro
                     headers: {
                         'Content-Type': 'application/json',
                         'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'X-Client-Info': 'github-pages-deployment'
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     },
                     body: JSON.stringify({ email: email, password: password })
                 });
@@ -96,13 +98,13 @@
 
                 if (!response.ok || result.error) {
                     const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de credenciales.';
-                    statusMessage.textContent = "Respuesta del Servidor:\n" + errorMsg;
+                    statusMessage.textContent = "Respuesta de Supabase:\n" + errorMsg;
                     statusMessage.className = "msg error";
                 } else {
                     if (botonPresionado === 'signup') {
                         statusMessage.textContent = "¡Registro Exitoso!\nUsuario creado correctamente en Supabase.";
                     } else {
-                        statusMessage.textContent = "¡Login Correcto!\nHas ingresado al sistema de manera segura.";
+                        statusMessage.textContent = "¡Login Correcto!\nHas ingresado de manera segura.";
                     }
                     statusMessage.className = "msg success";
                     form.reset();
@@ -111,7 +113,7 @@
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
                 statusMessage.classList.remove('hidden');
-                statusMessage.textContent = "Error de Red en GitHub:\n" + err.message + "\nIntenta recargar con Ctrl+F5.";
+                statusMessage.textContent = "Error de Red en GitHub Mac:\nEl navegador bloqueó la salida. Intenta con una pestaña privada.";
                 statusMessage.className = "msg error";
             }
         });
