@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Supabase</title>
+    
+    <!-- SDK oficial de producción unificada (Evita errores CORS y gestiona la clave sb_publishable) -->
+    <script src="https://jsdelivr.net"></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -37,19 +41,27 @@
                 <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
             </div>
             <div class="btn-group">
-                <button type="button" id="btnLogin" class="btn-primary" onclick="procesarAcceso('login')">Iniciar Sesión</button>
-                <button type="button" id="btnRegister" class="btn-secondary" onclick="procesarAcceso('registro')">Registrarse</button>
+                <button type="button" id="btnLogin" class="btn-primary" onclick="conectar('login')">Iniciar Sesión</button>
+                <button type="button" id="btnRegister" class="btn-secondary" onclick="conectar('registro')">Registrarse</button>
             </div>
         </div>
         <div id="statusMessage" class="msg"></div>
     </div>
 
     <script>
-        const API_URL = "https://supabase.co"; 
-        // Tu nueva API key integrada perfectamente
-        const ANON_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
+        const PROYECTO_URL = "https://sxccozwujfinramrczql.supabase.co";
+        // Tu nueva clave pública inyectada correctamente bajo el constructor SDK
+        const CLAVE_PUBLICA = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
 
-        async function procesarAcceso(modo) {
+        // Inicialización nativa aislada sin almacenamiento para evitar conflictos de cookies en Safari de Mac
+        const supabaseClient = supabase.createClient(PROYECTO_URL, CLAVE_PUBLICA, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false
+            }
+        });
+
+        async function conectar(accion) {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const statusMessage = document.getElementById('statusMessage');
@@ -62,46 +74,37 @@
             }
 
             statusMessage.style.display = "block";
-            statusMessage.textContent = "Procesando con el servidor...";
+            statusMessage.textContent = "Validando credenciales...";
             statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
             statusMessage.style.color = "#94a3b8";
             
             btnLogin.disabled = true;
             btnRegister.disabled = true;
 
-            let urlDestino = `${API_URL}/signup`;
-            if (modo === 'login') {
-                urlDestino = `${API_URL}/token?grant_type=password`;
-            }
-
             try {
-                // Arquitectura de red estricta con modo CORS explícito para GitHub Pages
-                const response = await fetch(urlDestino, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': ANON_KEY,
-                        // Añadimos Authorization Bearer para validar la nueva firma sb_publishable
-                        'Authorization': `Bearer ${ANON_KEY}`
-                    },
-                    body: JSON.stringify({ email: email, password: password })
-                });
-
-                const result = await response.json();
+                let respuesta;
                 
+                if (accion === 'registro') {
+                    // LLamada limpia delegada a la SDK v2
+                    respuesta = await supabaseClient.auth.signUp({ email, password });
+                } else {
+                    // LLamada limpia delegada a la SDK v2
+                    respuesta = await supabaseClient.auth.signInWithPassword({ email, password });
+                }
+
+                const { data, error } = respuesta;
+
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
 
-                if (!response.ok || result.error) {
-                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de autenticación.';
-                    statusMessage.textContent = "Respuesta: " + errorMsg;
+                if (error) {
+                    statusMessage.textContent = "Error de Supabase: " + error.message;
                     statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                     statusMessage.style.color = "#f87171";
-                } else {
-                    statusMessage.textContent = modo === 'registro' 
-                        ? "¡Éxito absoluto! Usuario guardado en Supabase." 
-                        : "¡Login correcto! Ingreso autorizado.";
+                } else if (data && data.user) {
+                    statusMessage.textContent = accion === 'registro' 
+                        ? "¡Éxito absoluto! Cuenta creada en Supabase." 
+                        : "¡Login correcto! Has ingresado con éxito.";
                     statusMessage.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
                     statusMessage.style.color = "#34d399";
                     document.getElementById('email').value = "";
@@ -110,10 +113,9 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Error de conexión de red local en tu Mac o bloqueo CORS.";
+                statusMessage.textContent = "Fallo de ejecución local en Mac: " + err.message;
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
-                console.error(err);
             }
         }
     </script>
