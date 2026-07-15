@@ -46,6 +46,7 @@
 
     <script>
         const API_URL = "https://supabase.co"; 
+        // Tu nueva API key integrada perfectamente
         const ANON_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
 
         async function procesarAcceso(modo) {
@@ -60,7 +61,6 @@
                 return;
             }
 
-            // Estado visual de carga inmediato
             statusMessage.style.display = "block";
             statusMessage.textContent = "Procesando con el servidor...";
             statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
@@ -69,18 +69,21 @@
             btnLogin.disabled = true;
             btnRegister.disabled = true;
 
-            // Selección de endpoint limpia de forma nativa
             let urlDestino = `${API_URL}/signup`;
             if (modo === 'login') {
                 urlDestino = `${API_URL}/token?grant_type=password`;
             }
 
             try {
+                // Arquitectura de red estricta con modo CORS explícito para GitHub Pages
                 const response = await fetch(urlDestino, {
                     method: 'POST',
+                    mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
-                        'apikey': ANON_KEY
+                        'apikey': ANON_KEY,
+                        // Añadimos Authorization Bearer para validar la nueva firma sb_publishable
+                        'Authorization': `Bearer ${ANON_KEY}`
                     },
                     body: JSON.stringify({ email: email, password: password })
                 });
@@ -107,9 +110,10 @@
             } catch (err) {
                 btnLogin.disabled = false;
                 btnRegister.disabled = false;
-                statusMessage.textContent = "Error de conexión de red local en tu Mac.";
+                statusMessage.textContent = "Error de conexión de red local en tu Mac o bloqueo CORS.";
                 statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
                 statusMessage.style.color = "#f87171";
+                console.error(err);
             }
         }
     </script>
