@@ -44,62 +44,65 @@
     </div>
 
     <script>
-        // // ⚠️ REEMPLAZA LAS DOS LÍNEAS ORIGINALES POR ESTAS:
-const SUPABASE_URL = "https://supabase.co"; // <- Quita "/rest/v1/" del final
-const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iy";
+    // URL base limpia y clave provista por el usuario
+    const SUPABASE_URL = "https://sxccozwujfinramrczql.supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_R0Cjm2izOTXxcgF-m5METQ_EOahA7iy";
 
-        const form = document.getElementById('registerForm');
-        const statusMessage = document.getElementById('statusMessage');
-        const button = document.getElementById('btnSubmit');
+    const form = document.getElementById('registerForm');
+    const statusMessage = document.getElementById('statusMessage');
+    const button = document.getElementById('btnSubmit');
 
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-            statusMessage.className = "msg";
-            statusMessage.style.display = "none";
-            button.disabled = true;
-            button.textContent = "Procesando registro...";
+        // Resetear estado del formulario
+        statusMessage.className = "msg";
+        statusMessage.style.display = "none";
+        button.disabled = true;
+        button.textContent = "Procesando registro...";
 
-            try {
-                // Conexión nativa HTTPS directa a la nube independiente de Supabase
-                const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
-                });
+        try {
+            // Petición HTTP directa al endpoint nativo de autenticación de Supabase
+            const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            });
 
-                const data = await response.json();
+            const data = await response.json();
 
-                button.disabled = false;
-                button.textContent = "Crear Cuenta";
+            button.disabled = false;
+            button.textContent = "Crear Cuenta";
 
-                if (response.ok) {
-                    statusMessage.textContent = "¡Éxito absoluto! Cuenta creada en la nube.";
-                    statusMessage.className = "msg success";
-                    form.reset();
-                } else {
-                    statusMessage.textContent = "Error: " + (data.msg || data.error_description || "Datos inválidos");
-                    statusMessage.className = "msg error";
-                }
-
-            } catch (err) {
-                button.disabled = false;
-                button.textContent = "Crear Cuenta";
-                statusMessage.textContent = "Error físico de conexión en tu red.";
+            if (response.ok) {
+                statusMessage.textContent = "¡Éxito absoluto! Cuenta creada en la nube.";
+                statusMessage.className = "msg success";
+                form.reset();
+            } else {
+                // Muestra el motivo exacto enviado por la API de Supabase
+                statusMessage.textContent = "Error: " + (data.message || data.error_description || "Datos inválidos");
                 statusMessage.className = "msg error";
-                console.error(err);
             }
-        });
-    </script>
+
+        } catch (err) {
+            button.disabled = false;
+            button.textContent = "Crear Cuenta";
+            statusMessage.textContent = "Error físico de conexión en tu red o bloqueo CORS.";
+            statusMessage.className = "msg error";
+            console.error("Detalle del error:", err);
+        }
+    });
+</script>
+
 </body>
 </html>
