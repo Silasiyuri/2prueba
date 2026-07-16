@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Super Login Profesional - Supabase</title>
-    <!-- SDK Oficial de Supabase para evitar errores de red o parámetros -->
+    <title>⚡ Super Login - Supabase</title>
     <script src="https://jsdelivr.net"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-        body { background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%); color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%); color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .card { background: rgba(30, 41, 59, 0.7); padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); text-align: center; }
         h2 { font-size: 26px; margin-bottom: 8px; color: #10b981; font-weight: 800; }
         p { font-size: 14px; color: #94a3b8; margin-bottom: 32px; }
@@ -18,7 +17,7 @@
         input:focus { border-color: #10b981; }
         button { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #0f172a; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 700; }
         button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
-        .msg { margin-top: 24px; font-size: 14px; display: none; padding: 14px; border-radius: 12px; font-weight: 500; }
+        .msg { margin-top: 24px; font-size: 14px; display: none; padding: 14px; border-radius: 12px; font-weight: 500; text-align: left; word-break: break-word; }
         .success { display: block; background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
         .error { display: block; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
         .toggle-container { margin-top: 24px; font-size: 14px; color: #94a3b8; }
@@ -28,136 +27,69 @@
     </style>
 </head>
 <body>
-
     <div class="card" id="authCard">
         <h2 id="formTitle">Iniciar Sesión</h2>
         <p id="formSubtitle">Ingresa tus credenciales para continuar</p>
-        
         <form id="authForm">
-            <div class="form-group">
-                <label>Correo Electrónico</label>
-                <input type="email" id="email" required placeholder="tu@correo.com">
-            </div>
-            <div class="form-group">
-                <label>Contraseña</label>
-                <input type="password" id="password" required placeholder="••••••••">
-            </div>
+            <div class="form-group"><label>Correo Electrónico</label><input type="email" id="email" required placeholder="tu@correo.com"></div>
+            <div class="form-group"><label>Contraseña</label><input type="password" id="password" required placeholder="••••••••"></div>
             <button type="submit" id="btnSubmit">Entrar al Sistema</button>
         </form>
-
         <div id="statusMessage" class="msg"></div>
-
-        <div class="toggle-container" id="toggleContainer">
-            <span id="toggleText">¿Eres nuevo aquí?</span><span class="toggle-link" id="toggleLink">Crea una cuenta</span>
-        </div>
+        <div class="toggle-container" id="toggleContainer"><span id="toggleText">¿Eres nuevo aquí?</span><span class="toggle-link" id="toggleLink">Crea una cuenta</span></div>
     </div>
-
 <script>
-    // ⚙️ TUS CREDENCIALES ACTUALIZADAS Y CONFIGURADAS
-    const SUPABASE_URL = "https://kpxcpkzmquqyduadnahz.supabase.co"; 
-    const SUPABASE_ANON_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3"; 
-
-    // Inicializar cliente
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const authCard = document.getElementById('authCard'), 
-          authForm = document.getElementById('authForm'), 
-          formTitle = document.getElementById('formTitle'), 
-          formSubtitle = document.getElementById('formSubtitle'), 
-          btnSubmit = document.getElementById('btnSubmit'), 
-          statusMessage = document.getElementById('statusMessage'), 
-          toggleText = document.getElementById('toggleText'), 
-          toggleLink = document.getElementById('toggleLink');
-          
-    let currentMode = 'login';
-
-    // Conmutador interactivo Login / Registro
-    toggleLink.addEventListener('click', () => {
-        statusMessage.style.display = "none";
-        authForm.reset();
-        if (currentMode === 'login') {
-            currentMode = 'signup';
-            formTitle.textContent = "Registro Seguro";
-            formSubtitle.textContent = "Crea un perfil inmediato en la nube";
-            btnSubmit.textContent = "Registrar Cuenta";
-            toggleText.textContent = "¿Ya tienes un usuario?";
-            toggleLink.textContent = "Inicia sesión";
+    const P_URL = "https://supabase.co", P_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
+    let client = supabase.createClient(P_URL, P_KEY);
+    const card = document.getElementById('authCard'), form = document.getElementById('authForm'), title = document.getElementById('formTitle'), sub = document.getElementById('formSubtitle'), btn = document.getElementById('btnSubmit'), msg = document.getElementById('statusMessage'), tText = document.getElementById('toggleText'), tLink = document.getElementById('toggleLink');
+    let mode = 'login';
+    tLink.addEventListener('click', () => {
+        msg.style.display = "none"; form.reset();
+        if (mode === 'login') {
+            mode = 'signup'; title.textContent = "Registro Seguro"; sub.textContent = "Crea un perfil inmediato"; btn.textContent = "Registrar Cuenta"; tText.textContent = "¿Ya tienes usuario?"; tLink.textContent = "Inicia sesión";
         } else {
-            currentMode = 'login';
-            formTitle.textContent = "Iniciar Sesión";
-            formSubtitle.textContent = "Ingresa tus credenciales para continuar";
-            btnSubmit.textContent = "Entrar al Sistema";
-            toggleText.textContent = "¿Eres nuevo aquí?";
-            toggleLink.textContent = "Crea una cuenta";
+            mode = 'login'; title.textContent = "Iniciar Sesión"; sub.textContent = "Ingresa tus credenciales"; btn.textContent = "Entrar al Sistema"; tText.textContent = "¿Eres nuevo aquí?"; tLink.textContent = "Crea una cuenta";
         }
     });
-
-    // Procesamiento del Formulario
-    authForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        
-        statusMessage.style.display = "none";
-        btnSubmit.disabled = true;
-        btnSubmit.textContent = currentMode === 'login' ? "Verificando..." : "Registrando...";
-
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault(); const email = document.getElementById('email').value.trim(), pass = document.getElementById('password').value;
+        msg.style.display = "none"; btn.disabled = true;
+        const oText = mode === 'login' ? "Entrar al Sistema" : "Registrar Cuenta";
+        btn.textContent = mode === 'login' ? "Verificando..." : "Registrando...";
+        const rescue = setTimeout(() => {
+            if (btn.disabled) { btn.disabled = false; btn.textContent = oText; showErr("Tiempo de espera agotado. Usa Live Server."); }
+        }, 5000);
         try {
-            if (currentMode === 'login') {
-                // LOGIN CON EL SDK
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                
-                statusMessage.textContent = "¡Acceso verificado! Redireccionando...";
-                statusMessage.className = "msg success";
+            if (mode === 'login') {
+                const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
+                clearTimeout(rescue); if (error) throw error;
+                msg.textContent = "¡Acceso verificado! Entrando..."; msg.className = "msg success"; msg.style.display = "block";
                 setTimeout(checkSession, 600);
-
             } else {
-                // REGISTRO CON EL SDK
-                const { data, error } = await supabase.auth.signUp({ email, password });
-                if (error) throw error;
-
+                const { data, error } = await client.auth.signUp({ email, password: pass });
+                clearTimeout(rescue); if (error) throw error;
+                btn.disabled = false; btn.textContent = oText;
                 if (data.session) {
-                    statusMessage.textContent = "¡Cuenta creada! Iniciando entorno...";
-                    statusMessage.className = "msg success";
+                    msg.textContent = "¡Cuenta creada! Entrando..."; msg.className = "msg success"; msg.style.display = "block";
                     setTimeout(checkSession, 600);
                 } else {
-                    btnSubmit.disabled = false;
-                    toggleLink.click();
-                    statusMessage.textContent = "¡Registrado! Revisa tu bandeja de entrada para verificar tu correo.";
-                    statusMessage.className = "msg success";
+                    tLink.click(); msg.textContent = "¡Cuenta creada! Revisa tu Email para verificar tu cuenta."; msg.className = "msg success"; msg.style.display = "block";
                 }
             }
         } catch (err) {
-            btnSubmit.disabled = false;
-            btnSubmit.textContent = currentMode === 'login' ? "Entrar al Sistema" : "Registrar Cuenta";
-            statusMessage.textContent = `Atención: ${err.message || "Error al procesar la solicitud"}`;
-            statusMessage.className = "msg error";
+            clearTimeout(rescue); btn.disabled = false; btn.textContent = oText;
+            showErr(err.message.includes("weak_password") ? "Contraseña muy débil (mínimo 6 caracteres)." : err.message);
         }
     });
-
-    // Control de renderizado del panel de bienvenida
+    function showErr(text) { msg.innerHTML = `<strong>Error:</strong><br>${text}`; msg.className = "msg error"; msg.style.display = "block"; }
     async function checkSession() {
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        const { data: { session } } = await client.auth.getSession();
         if (session) {
             const email = session.user.email;
-            authCard.innerHTML = `
-                <div class="welcome-panel">
-                    <div class="avatar">${email.charAt(0).toUpperCase()}</div>
-                    <h2>¡Bienvenido!</h2>
-                    <p>Sesión activa como:<br><span style="color:#10b981;font-weight:600">${email}</span></p>
-                    <button class="logout-btn" id="btnLogout">Cerrar Sesión</button>
-                </div>`;
-                
-            document.getElementById('btnLogout').addEventListener('click', async () => {
-                await supabase.auth.signOut();
-                window.location.reload();
-            });
+            card.innerHTML = `<div class="welcome-panel"><div class="avatar">${email.charAt(0).toUpperCase()}</div><h2>¡Bienvenido!</h2><p>Sesión activa:<br><span style="color:#10b981;font-weight:600">${email}</span></p><button class="logout-btn" id="btnLogout">Cerrar Sesión</button></div>`;
+            document.getElementById('btnLogout').addEventListener('click', async () => { await client.auth.signOut(); window.location.reload(); });
         }
     }
-
-    // Comprobación inicial automática al abrir o refrescar
     window.addEventListener('DOMContentLoaded', checkSession);
 </script>
 </body>
