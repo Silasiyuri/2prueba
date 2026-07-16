@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Super Login Profesional - Supabase</title>
-    
-    <!-- SDK OFICIAL DE SUPABASE -->
-    <script src="https://jsdelivr.net"></script>
-
+    <title>⚡ Registro Definitivo - Supabase</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%); color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
@@ -18,183 +14,91 @@
         label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; }
         input { width: 100%; padding: 14px; border: 2px solid #334155; border-radius: 12px; background: rgba(15, 23, 42, 0.6); color: #fff; font-size: 16px; outline: none; }
         input:focus { border-color: #10b981; }
-        button { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #0f172a; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
+        button { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #0f172a; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 700; transition: all 0.2s ease; width: 100%; }
         button:disabled { background: #334155; color: #64748b; cursor: not-allowed; opacity: 0.6; }
         .msg { margin-top: 24px; font-size: 14px; display: none; padding: 14px; border-radius: 12px; font-weight: 500; text-align: left; word-break: break-word; }
         .success { display: block; background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
         .error { display: block; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
-        .toggle-container { margin-top: 24px; font-size: 14px; color: #94a3b8; }
-        .toggle-link { color: #10b981; font-weight: 600; cursor: pointer; margin-left: 4px; }
-        .avatar { width: 64px; height: 64px; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto; color: #10b981; font-size: 28px; font-weight: bold; }
-        .logout-btn { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; margin-top: 16px; }
-        
-        .diag-btn { position: fixed; bottom: 20px; right: 20px; padding: 10px 15px; background: #3b82f6; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 12px; z-index: 1000; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="authCard">
-        <h2 id="formTitle">Iniciar Sesión</h2>
-        <p id="formSubtitle">Ingresa tus credenciales para continuar</p>
+    <div class="card">
+        <h2>Registro Directo</h2>
+        <p>Los usuarios se guardarán en tu tabla de Auth</p>
         
-        <form id="authForm">
+        <form id="registerForm">
             <div class="form-group">
                 <label>Correo Electrónico</label>
-                <input type="email" id="email" required placeholder="tu@correo.com" autocomplete="email">
+                <input type="email" id="email" required placeholder="ejemplo@correo.com">
             </div>
+            
             <div class="form-group">
                 <label>Contraseña</label>
-                <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password">
+                <input type="password" id="password" required placeholder="Mínimo 6 caracteres">
             </div>
-            <button type="submit" id="btnSubmit">Entrar al Sistema</button>
+            
+            <button type="submit" id="btnSubmit">Registrar Cuenta</button>
         </form>
-        
+
         <div id="statusMessage" class="msg"></div>
-        
-        <div class="toggle-container" id="toggleContainer">
-            <span id="toggleText">¿Eres nuevo aquí?</span>
-            <span class="toggle-link" id="toggleLink">Crea una cuenta</span>
-        </div>
     </div>
 
-    <button class="diag-btn" id="btnDiag">🔍 Comprobar Conexión</button>
-
 <script>
-    const P_URL = "https://supabase.co";
-    const P_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
-    
-    let client;
-    
-    try {
-        if (typeof supabase !== 'undefined') {
-            client = supabase.createClient(P_URL, P_KEY);
-        } else {
-            alert("Error crítico: No se pudo cargar la librería de Supabase. Revisa tu conexión a internet.");
-        }
-    } catch(e) {
-        console.error("Fallo al inicializar cliente:", e);
-    }
-    
-    const card = document.getElementById('authCard');
-    const form = document.getElementById('authForm');
-    const title = document.getElementById('formTitle');
-    const sub = document.getElementById('formSubtitle');
+    const SUPABASE_URL = "https://kpxcpkzmquqyduadnahz.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
+
+    const form = document.getElementById('registerForm');
     const btn = document.getElementById('btnSubmit');
     const msg = document.getElementById('statusMessage');
-    const tText = document.getElementById('toggleText');
-    const tLink = document.getElementById('toggleLink');
-    const diagBtn = document.getElementById('btnDiag');
-    
-    let mode = 'login';
-
-    tLink.addEventListener('click', () => {
-        msg.style.display = "none"; 
-        form.reset();
-        if (mode === 'login') {
-            mode = 'signup'; 
-            title.textContent = "Registro Seguro"; 
-            sub.textContent = "Crea un perfil inmediato"; 
-            btn.textContent = "Registrar Cuenta"; 
-            tText.textContent = "¿Ya tienes usuario?"; 
-            tLink.textContent = "Inicia sesión";
-        } else {
-            mode = 'login'; 
-            title.textContent = "Iniciar Sesión"; 
-            sub.textContent = "Ingresa tus credenciales"; 
-            btn.textContent = "Entrar al Sistema"; 
-            tText.textContent = "¿Eres nuevo aquí?"; 
-            tLink.textContent = "Crea una cuenta";
-        }
-    });
 
     form.addEventListener('submit', async function(e) {
-        e.preventDefault();
+        // CORRECCIÓN CRÍTICA: Detiene el envío clásico nativo para que la pantalla NO se quede en blanco
+        e.preventDefault(); 
         
         const email = document.getElementById('email').value.trim();
-        const pass = document.getElementById('password').value;
+        const password = document.getElementById('password').value;
         
         msg.style.display = "none"; 
         btn.disabled = true;
-        const originalText = btn.textContent;
-        btn.textContent = "Conectando con la Nube...";
+        btn.textContent = "Guardando en la nube...";
 
         try {
-            if (mode === 'login') {
-                const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
-                if (error) throw error;
-                
-                msg.textContent = "¡Acceso verificado! Entrando..."; 
-                msg.className = "msg success"; 
-                msg.style.display = "block";
-                setTimeout(checkSession, 500);
-            } else {
-                const { data, error } = await client.auth.signUp({ email, password: pass });
-                if (error) throw error;
-                
-                btn.disabled = false; 
-                btn.textContent = originalText;
-                
-                if (data && data.session) {
-                    msg.textContent = "¡Cuenta creada con éxito! Entrando..."; 
-                    msg.className = "msg success"; 
-                    msg.style.display = "block";
-                    setTimeout(checkSession, 500);
-                } else {
-                    msg.innerHTML = "<strong>¡Usuario enviado a la nube!</strong><br>Si no inicia sesión automático, ve a tu panel de Supabase > Authentication > Providers > Email y apaga la confirmación por correo."; 
-                    msg.className = "msg success"; 
-                    msg.style.display = "block";
-                }
+            const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.msg || result.message || "Error en el servidor");
             }
+
+            // Éxito: Modifica la interfaz sin salir de la página
+            btn.disabled = false; 
+            btn.textContent = "Registrar Cuenta";
+            form.reset();
+            
+            msg.innerHTML = "<strong>¡Usuario guardado con éxito!</strong><br>Ya puedes revisar tu panel web de Supabase para confirmar el registro."; 
+            msg.className = "msg success"; 
+            msg.style.display = "block";
+
         } catch (err) {
             btn.disabled = false; 
-            btn.textContent = originalText;
-            console.error(err);
-            showErr(err.message || "Error de red con Supabase.");
+            btn.textContent = "Registrar Cuenta";
+            
+            // Si el correo ya existía en la base de datos o la contraseña es muy corta
+            msg.innerHTML = `<strong>Error de Supabase:</strong><br>${err.message}`; 
+            msg.className = "msg error"; 
+            msg.style.display = "block"; 
         }
     });
-
-    function showErr(text) { 
-        msg.innerHTML = `<strong>Error de Supabase:</strong><br>${text}`; 
-        msg.className = "msg error"; 
-        msg.style.display = "block"; 
-    }
-    
-    async function checkSession() {
-        try {
-            const { data: { session } } = await client.auth.getSession();
-            if (session) {
-                const email = session.user.email;
-                card.innerHTML = `
-                    <div class="welcome-panel">
-                        <div class="avatar">${email.charAt(0).toUpperCase()}</div>
-                        <h2>¡Bienvenido!</h2>
-                        <p>Sesión activa:<br><span style="color:#10b981;font-weight:600">${email}</span></p>
-                        <button class="logout-btn" id="btnLogout">Cerrar Sesión</button>
-                    </div>`;
-                
-                document.getElementById('btnLogout').addEventListener('click', async () => { 
-                    await client.auth.signOut(); 
-                    window.location.reload(); 
-                });
-            }
-        } catch (e) {
-            console.warn("Verificación de sesión omitida.");
-        }
-    }
-
-    diagBtn.addEventListener('click', async () => {
-        diagBtn.textContent = "⏳ Conectando...";
-        try {
-            await client.auth.getSession();
-            alert("✅ ¡Conexión Exitosa! Tu código web se comunica perfectamente con tu base de datos Supabase.");
-        } catch(err) {
-            alert("❌ Error: Verifica tu conexión a internet o tus API keys.");
-        } finally {
-            diagBtn.textContent = "🔍 Comprobar Conexión";
-        }
-    });
-    
-    window.addEventListener('DOMContentLoaded', checkSession);
 </script>
 </body>
 </html>
