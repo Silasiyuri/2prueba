@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Super Login - Supabase</title>
+    <title>⚡ Super Login Profesional - Supabase</title>
+    <!-- Carga del SDK compatible con tu nueva clave sb_publishable -->
     <script src="https://jsdelivr.net"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
@@ -39,10 +40,11 @@
         <div class="toggle-container" id="toggleContainer"><span id="toggleText">¿Eres nuevo aquí?</span><span class="toggle-link" id="toggleLink">Crea una cuenta</span></div>
     </div>
 <script>
-    const P_URL = "https://supabase.co", P_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
-    let client = supabase.createClient(P_URL, P_KEY);
+    const P_URL = "https://kpxcpkzmquqyduadnahz.supabase.co", P_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
+    let client = supabase.createClient(P_URL, P_KEY); // Inicializado de manera segura
     const card = document.getElementById('authCard'), form = document.getElementById('authForm'), title = document.getElementById('formTitle'), sub = document.getElementById('formSubtitle'), btn = document.getElementById('btnSubmit'), msg = document.getElementById('statusMessage'), tText = document.getElementById('toggleText'), tLink = document.getElementById('toggleLink');
     let mode = 'login';
+
     tLink.addEventListener('click', () => {
         msg.style.display = "none"; form.reset();
         if (mode === 'login') {
@@ -51,37 +53,37 @@
             mode = 'login'; title.textContent = "Iniciar Sesión"; sub.textContent = "Ingresa tus credenciales"; btn.textContent = "Entrar al Sistema"; tText.textContent = "¿Eres nuevo aquí?"; tLink.textContent = "Crea una cuenta";
         }
     });
+
     form.addEventListener('submit', async function(e) {
         e.preventDefault(); const email = document.getElementById('email').value.trim(), pass = document.getElementById('password').value;
         msg.style.display = "none"; btn.disabled = true;
         const oText = mode === 'login' ? "Entrar al Sistema" : "Registrar Cuenta";
-        btn.textContent = mode === 'login' ? "Verificando..." : "Registrando...";
-        const rescue = setTimeout(() => {
-            if (btn.disabled) { btn.disabled = false; btn.textContent = oText; showErr("Tiempo de espera agotado. Usa Live Server."); }
-        }, 5000);
+        btn.textContent = "Conectando con la Nube...";
+
         try {
             if (mode === 'login') {
                 const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
-                clearTimeout(rescue); if (error) throw error;
+                if (error) throw error;
                 msg.textContent = "¡Acceso verificado! Entrando..."; msg.className = "msg success"; msg.style.display = "block";
                 setTimeout(checkSession, 600);
             } else {
                 const { data, error } = await client.auth.signUp({ email, password: pass });
-                clearTimeout(rescue); if (error) throw error;
+                if (error) throw error;
                 btn.disabled = false; btn.textContent = oText;
                 if (data.session) {
-                    msg.textContent = "¡Cuenta creada! Entrando..."; msg.className = "msg success"; msg.style.display = "block";
+                    msg.textContent = "¡Cuenta creada con éxito! Entrando..."; msg.className = "msg success"; msg.style.display = "block";
                     setTimeout(checkSession, 600);
                 } else {
-                    tLink.click(); msg.textContent = "¡Cuenta creada! Revisa tu Email para verificar tu cuenta."; msg.className = "msg success"; msg.style.display = "block";
+                    tLink.click(); msg.textContent = "¡Usuario guardado en la nube! Revisa tu bandeja de Email para activarlo antes de entrar."; msg.className = "msg success"; msg.style.display = "block";
                 }
             }
         } catch (err) {
-            clearTimeout(rescue); btn.disabled = false; btn.textContent = oText;
-            showErr(err.message.includes("weak_password") ? "Contraseña muy débil (mínimo 6 caracteres)." : err.message);
+            btn.disabled = false; btn.textContent = oText;
+            showErr(err.message.includes("weak_password") ? "Contraseña débil (mínimo 6 caracteres)." : err.message);
         }
     });
-    function showErr(text) { msg.innerHTML = `<strong>Error:</strong><br>${text}`; msg.className = "msg error"; msg.style.display = "block"; }
+
+    function showErr(text) { msg.innerHTML = `<strong>Error de Supabase:</strong><br>${text}`; msg.className = "msg error"; msg.style.display = "block"; }
     async function checkSession() {
         const { data: { session } } = await client.auth.getSession();
         if (session) {
