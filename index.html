@@ -3,117 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Seguro - Supabase</title>
+    <title>⚡ Super Login Profesional - Supabase</title>
+    <!-- SDK Oficial de Supabase para evitar errores de red o parámetros -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background-color: #1e293b; padding: 32px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); }
-        h2 { font-size: 22px; margin-bottom: 24px; color: #10b981; text-align: center; font-weight: 700; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; font-weight: 500; }
-        .form-group input { width: 100%; padding: 12px 16px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s; }
-        .form-group input:focus { border-color: #10b981; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        button { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
-        .btn-primary { background-color: #10b981; color: #0f172a; }
-        .btn-primary:hover { background-color: #059669; }
-        .btn-secondary { background-color: #334155; color: #f8fafc; }
-        .btn-secondary:hover { background-color: #475569; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .msg { margin-top: 20px; font-size: 14px; text-align: center; display: none; padding: 12px; border-radius: 8px; font-weight: 500; white-space: pre-wrap; word-break: break-word; }
+        body { background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%); color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: rgba(30, 41, 59, 0.7); padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); text-align: center; }
+        h2 { font-size: 26px; margin-bottom: 8px; color: #10b981; font-weight: 800; }
+        p { font-size: 14px; color: #94a3b8; margin-bottom: 32px; }
+        .form-group { margin-bottom: 24px; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; border: 2px solid #334155; border-radius: 12px; background: rgba(15, 23, 42, 0.6); color: #fff; font-size: 16px; outline: none; }
+        input:focus { border-color: #10b981; }
+        button { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #0f172a; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 700; }
+        button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .msg { margin-top: 24px; font-size: 14px; display: none; padding: 14px; border-radius: 12px; font-weight: 500; }
+        .success { display: block; background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+        .error { display: block; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
+        .toggle-container { margin-top: 24px; font-size: 14px; color: #94a3b8; }
+        .toggle-link { color: #10b981; font-weight: 600; cursor: pointer; margin-left: 4px; }
+        .avatar { width: 64px; height: 64px; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto; color: #10b981; font-size: 28px; font-weight: bold; }
+        .logout-btn { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Ingreso a la Nube</h2>
-        <div id="authForm">
+    <div class="card" id="authCard">
+        <h2 id="formTitle">Iniciar Sesión</h2>
+        <p id="formSubtitle">Ingresa tus credenciales para continuar</p>
+        
+        <form id="authForm">
             <div class="form-group">
                 <label>Correo Electrónico</label>
-                <input type="email" id="email" required placeholder="ejemplo@correo.com">
+                <input type="email" id="email" required placeholder="tu@correo.com">
             </div>
             <div class="form-group">
                 <label>Contraseña</label>
-                <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                <input type="password" id="password" required placeholder="••••••••">
             </div>
-            <div class="btn-group">
-                <button type="button" id="btnLogin" class="btn-primary" onclick="conectar('login')">Iniciar Sesión</button>
-                <button type="button" id="btnRegister" class="btn-secondary" onclick="conectar('registro')">Registrarse</button>
-            </div>
-        </div>
+            <button type="submit" id="btnSubmit">Entrar al Sistema</button>
+        </form>
+
         <div id="statusMessage" class="msg"></div>
+
+        <div class="toggle-container" id="toggleContainer">
+            <span id="toggleText">¿Eres nuevo aquí?</span><span class="toggle-link" id="toggleLink">Crea una cuenta</span>
+        </div>
     </div>
 
-    <script>
-        // Tus datos reales limpios e inyectados de forma nativa
-        const BASE_URL = "https://supabase.co"; 
-        const API_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3";
+<script>
+    // ⚙️ TUS CREDENCIALES ACTUALIZADAS Y CONFIGURADAS
+    const SUPABASE_URL = "https://kpxcpkzmquqyduadnahz.supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_XMm1hlrSBzm8iyLWM1iqCA__qBE79B3"; 
 
-        async function conectar(modo) {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const statusMessage = document.getElementById('statusMessage');
-            const btnLogin = document.getElementById('btnLogin');
-            const btnRegister = document.getElementById('btnRegister');
+    // Inicializar cliente
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            if (!email || !password) {
-                alert("Por favor, rellena todos los campos.");
-                return;
-            }
+    const authCard = document.getElementById('authCard'), 
+          authForm = document.getElementById('authForm'), 
+          formTitle = document.getElementById('formTitle'), 
+          formSubtitle = document.getElementById('formSubtitle'), 
+          btnSubmit = document.getElementById('btnSubmit'), 
+          statusMessage = document.getElementById('statusMessage'), 
+          toggleText = document.getElementById('toggleText'), 
+          toggleLink = document.getElementById('toggleLink');
+          
+    let currentMode = 'login';
 
-            statusMessage.style.display = "block";
-            statusMessage.textContent = "Procesando...";
-            statusMessage.style.backgroundColor = "rgba(148, 163, 184, 0.15)";
-            statusMessage.style.color = "#94a3b8";
-            
-            btnLogin.disabled = true;
-            btnRegister.disabled = true;
-
-            let endpoint = `${BASE_URL}/signup`;
-            if (modo === 'login') {
-                endpoint = `${BASE_URL}/token?grant_type=password`;
-            }
-
-            try {
-                // Petición directa libre de bloqueos de inicialización
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': API_KEY,
-                        'Authorization': `Bearer ${API_KEY}`
-                    },
-                    body: JSON.stringify({ email: email, password: password })
-                });
-
-                const result = await response.json();
-                
-                btnLogin.disabled = false;
-                btnRegister.disabled = false;
-
-                if (!response.ok || result.error) {
-                    const errorMsg = result.error_description || result.msg || (result.error && result.error.message) || 'Error de datos';
-                    statusMessage.textContent = "Servidor dice:\n" + errorMsg;
-                    statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
-                    statusMessage.style.color = "#f87171";
-                } else {
-                    statusMessage.textContent = modo === 'registro' 
-                        ? "¡Éxito absoluto! Cuenta creada en tu nuevo proyecto." 
-                        : "¡Login correcto! Bienvenido.";
-                    statusMessage.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
-                    statusMessage.style.color = "#34d399";
-                    document.getElementById('email').value = "";
-                    document.getElementById('password').value = "";
-                }
-            } catch (err) {
-                btnLogin.disabled = false;
-                btnRegister.disabled = false;
-                statusMessage.textContent = "Error de red: La conexión hacia Supabase fue interrumpida localmente.";
-                statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
-                statusMessage.style.color = "#f87171";
-                console.error(err);
-            }
+    // Conmutador interactivo Login / Registro
+    toggleLink.addEventListener('click', () => {
+        statusMessage.style.display = "none";
+        authForm.reset();
+        if (currentMode === 'login') {
+            currentMode = 'signup';
+            formTitle.textContent = "Registro Seguro";
+            formSubtitle.textContent = "Crea un perfil inmediato en la nube";
+            btnSubmit.textContent = "Registrar Cuenta";
+            toggleText.textContent = "¿Ya tienes un usuario?";
+            toggleLink.textContent = "Inicia sesión";
+        } else {
+            currentMode = 'login';
+            formTitle.textContent = "Iniciar Sesión";
+            formSubtitle.textContent = "Ingresa tus credenciales para continuar";
+            btnSubmit.textContent = "Entrar al Sistema";
+            toggleText.textContent = "¿Eres nuevo aquí?";
+            toggleLink.textContent = "Crea una cuenta";
         }
-    </script>
+    });
+
+    // Procesamiento del Formulario
+    authForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        
+        statusMessage.style.display = "none";
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = currentMode === 'login' ? "Verificando..." : "Registrando...";
+
+        try {
+            if (currentMode === 'login') {
+                // LOGIN CON EL SDK
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                
+                statusMessage.textContent = "¡Acceso verificado! Redireccionando...";
+                statusMessage.className = "msg success";
+                setTimeout(checkSession, 600);
+
+            } else {
+                // REGISTRO CON EL SDK
+                const { data, error } = await supabase.auth.signUp({ email, password });
+                if (error) throw error;
+
+                if (data.session) {
+                    statusMessage.textContent = "¡Cuenta creada! Iniciando entorno...";
+                    statusMessage.className = "msg success";
+                    setTimeout(checkSession, 600);
+                } else {
+                    btnSubmit.disabled = false;
+                    toggleLink.click();
+                    statusMessage.textContent = "¡Registrado! Revisa tu bandeja de entrada para verificar tu correo.";
+                    statusMessage.className = "msg success";
+                }
+            }
+        } catch (err) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = currentMode === 'login' ? "Entrar al Sistema" : "Registrar Cuenta";
+            statusMessage.textContent = `Atención: ${err.message || "Error al procesar la solicitud"}`;
+            statusMessage.className = "msg error";
+        }
+    });
+
+    // Control de renderizado del panel de bienvenida
+    async function checkSession() {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+            const email = session.user.email;
+            authCard.innerHTML = `
+                <div class="welcome-panel">
+                    <div class="avatar">${email.charAt(0).toUpperCase()}</div>
+                    <h2>¡Bienvenido!</h2>
+                    <p>Sesión activa como:<br><span style="color:#10b981;font-weight:600">${email}</span></p>
+                    <button class="logout-btn" id="btnLogout">Cerrar Sesión</button>
+                </div>`;
+                
+            document.getElementById('btnLogout').addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.reload();
+            });
+        }
+    }
+
+    // Comprobación inicial automática al abrir o refrescar
+    window.addEventListener('DOMContentLoaded', checkSession);
+</script>
 </body>
 </html>
